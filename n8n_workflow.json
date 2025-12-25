@@ -1,0 +1,323 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "respondWith": "allIncomingItems",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.4,
+            "position": [
+                80,
+                -80
+            ],
+            "id": "5a1b7621-064b-454d-ba79-11c978fb1904",
+            "name": "Respond to Webhook"
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg",
+                    "mode": "list",
+                    "cachedResultName": "[POOH] Dynamic Form Data",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Config_Form",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit#gid=0"
+                },
+                "filtersUI": {
+                    "values": [
+                        {
+                            "lookupColumn": "form id",
+                            "lookupValue": "={{ $json.body.form_id }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                -560,
+                -80
+            ],
+            "id": "6df13792-c0c1-4f28-8a70-3c95c63f760f",
+            "name": "get path",
+            "alwaysOutputData": true,
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "eiXrRmu5i3vrFtp9",
+                    "name": "POOH' GOOGLE SHEETS"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "loose",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "b984fe08-59fa-40ff-9707-9eaa257691d1",
+                            "leftValue": "={{ $json['form id'] }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "string",
+                                "operation": "notEmpty",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                -400,
+                -80
+            ],
+            "id": "5d74cf76-c709-4b1d-9cae-d012a6ab8086",
+            "name": "If"
+        },
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "pir/form",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [
+                -720,
+                -80
+            ],
+            "id": "ff1531a7-efd8-4bea-ba4d-be007933d64e",
+            "name": "Fetch Webhook",
+            "webhookId": "a77cbad6-c136-46f1-bd06-d435a94aefa5"
+        },
+        {
+            "parameters": {
+                "jsCode": "const item = $input.first().json;\n\n// Parse the form definition JSON from Google Sheets\nconst formDefinition = item['form definition'];\n\ntry {\n  // form definition is stored as JSON string in the sheet\n  const parsed = JSON.parse(formDefinition);\n  \n  return [{\n    json: {\n      title: parsed.title || 'Untitled Form',\n      description: parsed.description || '',\n      questions: parsed.questions || []\n    }\n  }];\n} catch (e) {\n  return [{\n    json: {\n      error: 'Invalid form definition JSON',\n      message: e.message\n    }\n  }];\n}"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -176,
+                -192
+            ],
+            "id": "a0c077c4-8dbc-41e1-af63-265fc9972f3f",
+            "name": "Parse Form Definition"
+        },
+        {
+            "parameters": {
+                "mode": "raw",
+                "jsonOutput": "{\n  \"error\": \"Form not found\",\n  \"message\": \"The requested form ID does not exist\"\n}\n",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                -176,
+                -16
+            ],
+            "id": "b7e12a78-74d6-4f2e-9961-8c246b228589",
+            "name": "Form Not Found"
+        },
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "pir/form/submit",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [
+                -528,
+                336
+            ],
+            "id": "cc5e005e-766e-48cd-9a6d-24828a344512",
+            "name": "Submit Webhook",
+            "webhookId": "consent-submit-webhook"
+        },
+        {
+            "parameters": {
+                "jsCode": "const body = $input.first().json.body;\n\n// Convert answers object to string for logging\nconst answersStr = JSON.stringify(body.answers || {}, null, 2);\n\nreturn [{\n  json: {\n    'Submitted At': body.submitted_at || new Date().toISOString(),\n    'Form ID': body.form_id || '',\n    'Form Title': body.form_title || '',\n    'Answers': answersStr\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -320,
+                336
+            ],
+            "id": "d8caed93-5e32-401e-93ca-be99b5cdd2b5",
+            "name": "Format Form Submission"
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg",
+                    "mode": "list",
+                    "cachedResultName": "[POOH] Dynamic Form Data",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": 61872764,
+                    "mode": "list",
+                    "cachedResultName": "Log_Form",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit#gid=61872764"
+                },
+                "columns": {
+                    "mappingMode": "autoMapInputData",
+                    "value": {}
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                -128,
+                336
+            ],
+            "id": "6d1493d2-bc8b-429d-b322-344acaf681bd",
+            "name": "Append to Log",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "eiXrRmu5i3vrFtp9",
+                    "name": "POOH' GOOGLE SHEETS"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify({ success: true, message: 'Form submitted successfully' }) }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.4,
+            "position": [
+                80,
+                336
+            ],
+            "id": "3f739585-d926-4397-a3bf-bbd30f34b973",
+            "name": "Respond Success"
+        }
+    ],
+    "connections": {
+        "get path": {
+            "main": [
+                [
+                    {
+                        "node": "If",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "If": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Form Definition",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Form Not Found",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "get path",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse Form Definition": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Form Not Found": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Submit Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Format Form Submission",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Form Submission": {
+            "main": [
+                [
+                    {
+                        "node": "Append to Log",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Append to Log": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "instanceId": "c4a432d8839f73c04d1c52b619739b20deb63b823fc0c91805299f612d5b8100"
+    }
+}

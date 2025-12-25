@@ -1,0 +1,233 @@
+form id,form definition
+1,"{
+  ""title"": ""Customer Feedback Survey"",
+  ""description"": ""We'd love to hear your thoughts! Please take a moment to complete this survey."",
+  ""questions"": [
+    {
+      ""id"": ""satisfaction"",
+      ""type"": ""choices"",
+      ""label"": ""How satisfied are you with our service?"",
+      ""description"": ""Select the option that best describes your experience"",
+      ""required"": true,
+      ""options"": [
+        ""Very Satisfied"",
+        ""Satisfied"",
+        ""Neutral"",
+        ""Dissatisfied"",
+        ""Very Dissatisfied""
+      ]
+    },
+    {
+      ""id"": ""features"",
+      ""type"": ""choices"",
+      ""label"": ""Which features do you use the most?"",
+      ""description"": ""Select all that apply"",
+      ""required"": false,
+      ""multiple"": true,
+      ""options"": [
+        ""Dashboard Analytics"",
+        ""Report Generation"",
+        ""Team Collaboration"",
+        ""API Integration"",
+        ""Mobile App""
+      ]
+    },
+    {
+      ""id"": ""feedback"",
+      ""type"": ""text"",
+      ""label"": ""What improvements would you suggest?"",
+      ""description"": ""Share your ideas to help us improve"",
+      ""required"": false,
+      ""placeholder"": ""Tell us what you think..."",
+      ""multiline"": true
+    },
+    {
+      ""id"": ""phone"",
+      ""type"": ""phone"",
+      ""label"": ""What's your phone number?"",
+      ""description"": ""We may contact you for follow-up questions"",
+      ""required"": true,
+      ""placeholder"": ""(555) 123-4567""
+    },
+    {
+      ""id"": ""email"",
+      ""type"": ""email"",
+      ""label"": ""What's your email address?"",
+      ""description"": ""We'll send you a copy of your responses"",
+      ""required"": true,
+      ""placeholder"": ""you@example.com""
+    },
+    {
+      ""id"": ""rating"",
+      ""type"": ""rating"",
+      ""label"": ""How would you rate our product overall?"",
+      ""description"": ""Click on the stars to rate"",
+      ""required"": true,
+      ""maxRating"": 5
+    },
+    {
+      ""id"": ""attachment"",
+      ""type"": ""file"",
+      ""label"": ""Upload any supporting documents"",
+      ""description"": ""Screenshots, reports, or other relevant files"",
+      ""required"": false,
+      ""accept"": "".pdf,.png,.jpg,.jpeg,.doc,.docx"",
+      ""maxSize"": 5
+    }
+  ]
+}"
+2,"{
+  ""title"": ""แบบสอบถามความสนใจคอร์สเรียน AI - PiR Academy"",
+  ""description"": ""มาร่วมเป็นส่วนหนึ่งกับการเรียนรู้เทคโนโลยีแห่งอนาคต! ข้อมูลของคุณจะช่วยให้เราออกแบบคอร์สที่ตอบโจทย์คุณได้มากที่สุด"",
+  ""questions"": [
+    {
+      ""id"": ""interest_level"",
+      ""type"": ""choices"",
+      ""label"": ""คุณมีความสนใจในการเรียนรู้เรื่อง AI ในระดับใด?"",
+      ""description"": ""กรุณาเลือกตัวเลือกที่ตรงกับความรู้สึกของคุณมากที่สุด"",
+      ""required"": true,
+      ""options"": [
+        ""สนใจมากที่สุด (พร้อมลงทะเบียนทันที)"",
+        ""สนใจมาก (กำลังตัดสินใจ)"",
+        ""สนใจปานกลาง (ขอรอดูรายละเอียดเพิ่มเติม)"",
+        ""สนใจน้อย (ยังไม่แน่ใจ)"",
+        ""ไม่สนใจ""
+      ]
+    },
+    {
+      ""id"": ""topics"",
+      ""type"": ""choices"",
+      ""label"": ""หัวข้อ AI ใดที่คุณต้องการเรียนรู้มากที่สุด?"",
+      ""description"": ""เลือกได้มากกว่า 1 ข้อ"",
+      ""required"": false,
+      ""multiple"": true,
+      ""options"": [
+        ""Generative AI (ChatGPT, Midjourney)"",
+        ""Machine Learning Fundamentals"",
+        ""AI for Business (การประยุกต์ใช้ในธุรกิจ)"",
+        ""Prompt Engineering"",
+        ""Data Science & AI with Python""
+      ]
+    },
+    {
+      ""id"": ""expectations"",
+      ""type"": ""text"",
+      ""label"": ""เป้าหมายหรือความคาดหวังที่คุณต้องการได้รับจากคอร์สนี้คืออะไร?"",
+      ""description"": ""แบ่งปันไอเดียหรือสิ่งที่อยากให้เราเน้นเป็นพิเศษ"",
+      ""required"": false,
+      ""placeholder"": ""เช่น อยากเขียนโปรแกรมเป็น, อยากเพิ่มประสิทธิภาพการทำงาน..."",
+      ""multiline"": true
+    },
+    {
+      ""id"": ""phone"",
+      ""type"": ""phone"",
+      ""label"": ""เบอร์โทรศัพท์ติดต่อ"",
+      ""description"": ""เพื่อให้เจ้าหน้าที่แจ้งสิทธิพิเศษสำหรับผู้สมัครล่วงหน้า"",
+      ""required"": true,
+      ""placeholder"": ""08x-xxx-xxxx""
+    },
+    {
+      ""id"": ""email"",
+      ""type"": ""email"",
+      ""label"": ""อีเมล"",
+      ""description"": ""เราจะส่งรายละเอียดหลักสูตรและส่วนลดไปให้ทางอีเมล"",
+      ""required"": true,
+      ""placeholder"": ""example@email.com""
+    },
+    {
+      ""id"": ""prior_knowledge"",
+      ""type"": ""rating"",
+      ""label"": ""คุณประเมินพื้นฐานความรู้ด้าน AI ของตนเองไว้ที่ระดับใด?"",
+      ""description"": ""1 = ไม่มีพื้นฐานเลย, 5 = เชี่ยวชาญมาก"",
+      ""required"": true,
+      ""maxRating"": 5
+    },
+    {
+      ""id"": ""attachment"",
+      ""type"": ""file"",
+      ""label"": ""แนบไฟล์ผลงานหรือโปรเจกต์ที่เคยทำ (ถ้ามี)"",
+      ""description"": ""เพื่อช่วยให้เราแนะนำระดับการเรียนที่เหมาะสมกับคุณ"",
+      ""required"": false,
+      ""accept"": "".pdf,.png,.jpg,.jpeg,.doc,.docx"",
+      ""maxSize"": 5
+    }
+  ]
+}"
+pireval,"{
+  ""title"": ""แบบประเมินความพึงพอใจคอร์สเรียน - PiR Academy"",
+  ""description"": ""ความคิดเห็นของคุณมีความหมายต่อเรามาก กรุณาประเมินการเรียนการสอนใน 5 ด้าน เพื่อให้เราพัฒนาคุณภาพให้ดียิ่งขึ้น"",
+  ""questions"": [
+    {
+      ""id"": ""instructor_quality"",
+      ""type"": ""rating"",
+      ""label"": ""1. คุณภาพและความเชี่ยวชาญของผู้สอน"",
+      ""description"": ""ผู้สอนมีความรู้ ถ่ายทอดเข้าใจง่าย และตอบคำถามได้ชัดเจน"",
+      ""required"": true,
+      ""maxRating"": 5
+    },
+    {
+      ""id"": ""content_relevance"",
+      ""type"": ""rating"",
+      ""label"": ""2. เนื้อหาของหลักสูตร"",
+      ""description"": ""เนื้อหามีความทันสมัย ครบถ้วน และเรียงลำดับการสอนได้อย่างเหมาะสม"",
+      ""required"": true,
+      ""maxRating"": 5
+    },
+    {
+      ""id"": ""practical_application"",
+      ""type"": ""rating"",
+      ""label"": ""3. การนำไปใช้ประโยชน์ได้จริง"",
+      ""description"": ""เนื้อหาและ Workshop สามารถนำไปปรับใช้กับการทำงานหรือโปรเจกต์จริงได้"",
+      ""required"": true,
+      ""maxRating"": 5
+    },
+    {
+      ""id"": ""learning_materials"",
+      ""type"": ""rating"",
+      ""label"": ""4. สื่อการสอนและสภาพแวดล้อม"",
+      ""description"": ""เอกสารประกอบการเรียน เครื่องมือ AI และระบบการเรียนใช้งานได้ดี"",
+      ""required"": true,
+      ""maxRating"": 5
+    },
+    {
+      ""id"": ""support_service"",
+      ""type"": ""rating"",
+      ""label"": ""5. การดูแลและบริการจากทีมงาน"",
+      ""description"": ""การประสานงาน การตอบแชท และการให้ความช่วยเหลือของเจ้าหน้าที่"",
+      ""required"": true,
+      ""maxRating"": 5
+    },
+    {
+      ""id"": ""best_part"",
+      ""type"": ""choices"",
+      ""label"": ""ส่วนที่คุณประทับใจมากที่สุดในคลาสนี้คือ?"",
+      ""description"": ""เลือกได้มากกว่า 1 ข้อ"",
+      ""required"": false,
+      ""multiple"": true,
+      ""options"": [
+        ""เนื้อหาเชิงลึก (Deep Dive)"",
+        ""การทำ Workshop/Lab"",
+        ""เทคนิคการสอนของผู้สอน"",
+        ""เครือข่ายเพื่อนร่วมคลาส (Networking)"",
+        ""การสนับสนุนหลังการเรียน""
+      ]
+    },
+    {
+      ""id"": ""additional_feedback"",
+      ""type"": ""text"",
+      ""label"": ""ข้อเสนอแนะเพิ่มเติมเพื่อการปรับปรุง"",
+      ""description"": ""คุณอยากให้เราเพิ่มหรือลดเนื้อหาส่วนไหนในครั้งหน้า?"",
+      ""required"": false,
+      ""placeholder"": ""เขียนคำแนะนำของคุณที่นี่..."",
+      ""multiline"": true
+    },
+    {
+      ""id"": ""contact_info"",
+      ""type"": ""email"",
+      ""label"": ""อีเมลของคุณ (เลือกระบุหรือไม่ก็ได้)"",
+      ""description"": ""ในกรณีที่คุณต้องการให้เจ้าหน้าที่ติดต่อกลับเพื่อรับฟังข้อมูลเพิ่มเติม"",
+      ""required"": false,
+      ""placeholder"": ""you@example.com""
+    }
+  ]
+}"

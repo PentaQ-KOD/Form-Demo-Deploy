@@ -1,0 +1,95 @@
+{
+    "type": "object",
+    "required": [
+        "title",
+        "questions"
+    ],
+    "properties": {
+        "title": {
+            "type": "string",
+            "description": "Form title displayed at the top"
+        },
+        "description": {
+            "type": "string",
+            "description": "Form description or instructions"
+        },
+        "questions": {
+            "type": "array",
+            "description": "Array of question objects",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "label"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the question"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "text",
+                            "choices",
+                            "rating",
+                            "email",
+                            "phone",
+                            "date",
+                            "file"
+                        ],
+                        "description": "Question type"
+                    },
+                    "label": {
+                        "type": "string",
+                        "description": "Question label/title"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Helper text shown below the label"
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "description": "Whether the field is required",
+                        "default": false
+                    },
+                    "placeholder": {
+                        "type": "string",
+                        "description": "Placeholder text for input fields"
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Options for choices type"
+                    },
+                    "multiple": {
+                        "type": "boolean",
+                        "description": "Allow multiple selections for choices type",
+                        "default": false
+                    },
+                    "multiline": {
+                        "type": "boolean",
+                        "description": "Use textarea for text type",
+                        "default": false
+                    },
+                    "maxRating": {
+                        "type": "integer",
+                        "description": "Maximum stars for rating type",
+                        "default": 5
+                    },
+                    "accept": {
+                        "type": "string",
+                        "description": "Accepted file extensions for file type (e.g., '.pdf,.jpg,.png')"
+                    },
+                    "maxSize": {
+                        "type": "integer",
+                        "description": "Maximum file size in MB for file type"
+                    }
+                }
+            }
+        }
+    }
+}
