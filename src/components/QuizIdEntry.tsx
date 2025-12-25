@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import logoLight from "@/assets/PiRAcademy_HZ_BLK.png";
-import logoDark from "@/assets/PiRAcademy_HZ_WHT.png";
+
+const LOGO_URL = "https://pirsquare.net/pir-facebook.png";
 
 interface QuizIdEntryProps {
   isDark: boolean;
@@ -27,18 +27,18 @@ export const QuizIdEntry = ({ isDark }: QuizIdEntryProps) => {
         <ThemeToggle />
       </div>
 
-      <img 
-        src={isDark ? logoDark : logoLight}
-        alt="PiR Academy Logo" 
+      <img
+        src={LOGO_URL}
+        alt="PiR Academy Logo"
         className="h-12 md:h-16 mb-8"
       />
-      
+
       <div className="text-center space-y-4 max-w-md">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground font-bai">
-          กรุณากรอก Quiz ID
+          กรุณากรอก Form ID
         </h1>
         <p className="text-muted-foreground font-noto">
-          Please enter your Quiz ID to start the test
+          Please enter your Form ID to start the test
         </p>
       </div>
 
@@ -47,12 +47,12 @@ export const QuizIdEntry = ({ isDark }: QuizIdEntryProps) => {
           type="text"
           value={quizId}
           onChange={(e) => setQuizId(e.target.value)}
-          placeholder="Enter Quiz ID"
+          placeholder="Enter Form ID"
           className="text-center text-lg font-bai"
           required
         />
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full text-lg font-bai"
           disabled={!quizId.trim()}
         >

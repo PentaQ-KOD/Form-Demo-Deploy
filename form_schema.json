@@ -6,16 +6,13 @@
     ],
     "properties": {
         "title": {
-            "type": "string",
-            "description": "Form title displayed at the top"
+            "type": "string"
         },
         "description": {
-            "type": "string",
-            "description": "Form description or instructions"
+            "type": "string"
         },
         "questions": {
             "type": "array",
-            "description": "Array of question objects",
             "items": {
                 "type": "object",
                 "required": [
@@ -25,8 +22,7 @@
                 ],
                 "properties": {
                     "id": {
-                        "type": "string",
-                        "description": "Unique identifier for the question"
+                        "type": "string"
                     },
                     "type": {
                         "type": "string",
@@ -38,55 +34,40 @@
                             "phone",
                             "date",
                             "file"
-                        ],
-                        "description": "Question type"
+                        ]
                     },
                     "label": {
-                        "type": "string",
-                        "description": "Question label/title"
+                        "type": "string"
                     },
                     "description": {
-                        "type": "string",
-                        "description": "Helper text shown below the label"
+                        "type": "string"
                     },
                     "required": {
-                        "type": "boolean",
-                        "description": "Whether the field is required",
-                        "default": false
+                        "type": "boolean"
                     },
                     "placeholder": {
-                        "type": "string",
-                        "description": "Placeholder text for input fields"
+                        "type": "string"
                     },
                     "options": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        },
-                        "description": "Options for choices type"
+                        }
                     },
                     "multiple": {
-                        "type": "boolean",
-                        "description": "Allow multiple selections for choices type",
-                        "default": false
+                        "type": "boolean"
                     },
                     "multiline": {
-                        "type": "boolean",
-                        "description": "Use textarea for text type",
-                        "default": false
+                        "type": "boolean"
                     },
                     "maxRating": {
-                        "type": "integer",
-                        "description": "Maximum stars for rating type",
-                        "default": 5
+                        "type": "integer"
                     },
                     "accept": {
-                        "type": "string",
-                        "description": "Accepted file extensions for file type (e.g., '.pdf,.jpg,.png')"
+                        "type": "string"
                     },
                     "maxSize": {
-                        "type": "integer",
-                        "description": "Maximum file size in MB for file type"
+                        "type": "integer"
                     }
                 }
             }

@@ -1,16 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, AlertCircle, ChevronLeft, ChevronRight, Check, Upload, X } from "lucide-react";
-import { StarRating, ChoiceField, ProgressBar } from "@/components/form";
+import { RefreshCw, AlertCircle, Check, Upload, X } from "lucide-react";
+import { StarRating, ChoiceField } from "@/components/form";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date";
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown";
     label: string;
     description?: string;
     required?: boolean;
@@ -27,12 +27,17 @@ interface FormConfig {
     title: string;
     description: string;
     questions: Question[];
+    logoUrl?: string;
+    successUrl?: string;
+    notifyEmails?: string;
+    slackWebhook?: string;
+    responseSheet?: string;
 }
 
-type FormState = "loading" | "error" | "form" | "confirmation" | "submitting" | "thankyou";
+type FormState = "loading" | "error" | "form" | "submitting" | "thankyou";
 
-const FETCH_URL = "https://auto.pirsquare.net/webhook-test/pir/form";
-const SUBMIT_URL = "https://auto.pirsquare.net/webhook-test/pir/form/submit";
+const FETCH_URL = import.meta.env.VITE_FORM_FETCH_URL || "https://auto.pirsquare.net/webhook-test/pir/form";
+const SUBMIT_URL = import.meta.env.VITE_FORM_SUBMIT_URL || "https://auto.pirsquare.net/webhook-test/pir/form/submit";
 
 export default function FormPage() {
     const { formId } = useParams<{ formId: string }>();
@@ -41,7 +46,6 @@ export default function FormPage() {
     const [formState, setFormState] = useState<FormState>("loading");
     const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
     const [formData, setFormData] = useState<Record<string, string | string[] | number | File | null>>({});
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -103,27 +107,6 @@ export default function FormPage() {
         fetchFormConfig();
     }, [formId]);
 
-    // Calculate answered questions count
-    const answeredCount = useMemo(() => {
-        if (!formConfig) return 0;
-        return formConfig.questions.filter((q) => {
-            const value = formData[q.id];
-            if (q.type === "choices" && q.multiple) {
-                return Array.isArray(value) && value.length > 0;
-            }
-            if (q.type === "rating") {
-                return typeof value === "number" && value > 0;
-            }
-            if (q.type === "file") {
-                return value !== null;
-            }
-            return value !== "" && value !== undefined;
-        }).length;
-    }, [formData, formConfig]);
-
-    // Current question
-    const currentQuestion = formConfig?.questions[currentQuestionIndex];
-
     // Handle input change
     const handleChange = (questionId: string, value: string | string[] | number | File | null) => {
         setFormData((prev) => ({ ...prev, [questionId]: value }));
@@ -180,7 +163,7 @@ export default function FormPage() {
         return null;
     };
 
-    // Validate all questions
+    // Validate all questions and scroll to first error
     const validateAll = (): boolean => {
         if (!formConfig) return false;
 
@@ -193,43 +176,18 @@ export default function FormPage() {
         });
 
         setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
 
-    // Navigation
-    const goToNext = () => {
-        if (!currentQuestion) return;
-
-        const error = validateQuestion(currentQuestion);
-        if (error) {
-            setValidationErrors((prev) => ({ ...prev, [currentQuestion.id]: error }));
-            return;
-        }
-
-        if (currentQuestionIndex < (formConfig?.questions.length || 0) - 1) {
-            setCurrentQuestionIndex((prev) => prev + 1);
-        }
-    };
-
-    const goToPrevious = () => {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex((prev) => prev - 1);
-        }
-    };
-
-    const goToConfirmation = () => {
-        if (validateAll()) {
-            setFormState("confirmation");
-        } else {
-            // Find first error and navigate to it
-            const firstErrorIndex = formConfig?.questions.findIndex(
-                (q) => validationErrors[q.id]
-            );
-            if (firstErrorIndex !== undefined && firstErrorIndex >= 0) {
-                setCurrentQuestionIndex(firstErrorIndex);
+        // Scroll to first error if any
+        if (Object.keys(errors).length > 0) {
+            const firstErrorId = Object.keys(errors)[0];
+            const element = document.getElementById(`question-${firstErrorId}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
         }
+
+        return Object.keys(errors).length === 0;
     };
 
     // Submit form
@@ -253,6 +211,10 @@ export default function FormPage() {
                 form_id: formId,
                 form_title: formConfig.title,
                 answers,
+                questions: formConfig.questions, // For email type detection
+                notify_emails: formConfig.notifyEmails || '', // Admin emails  
+                slack_webhook: formConfig.slackWebhook || '', // Slack webhook
+                response_sheet: formConfig.responseSheet || '', // Response sheet URL
                 submitted_at: new Date().toISOString(),
             };
 
@@ -269,7 +231,7 @@ export default function FormPage() {
             setFormState("thankyou");
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to submit form");
-            setFormState("confirmation");
+            setFormState("form");
         }
     };
 
@@ -287,6 +249,27 @@ export default function FormPage() {
                         onChange={(v) => handleChange(question.id, v)}
                         multiple={question.multiple}
                     />
+                );
+
+            case "dropdown":
+                return (
+                    <select
+                        value={typeof value === "string" ? value : ""}
+                        onChange={(e) => handleChange(question.id, e.target.value)}
+                        className={cn(
+                            "pir-form-input w-full h-12 md:h-14 px-4 rounded-lg border-2",
+                            "font-bai text-base md:text-lg bg-background",
+                            "focus:outline-none focus:ring-2 focus:ring-ring",
+                            error ? "border-destructive" : "border-border"
+                        )}
+                    >
+                        <option value="">{question.placeholder || "กรุณาเลือก..."}</option>
+                        {(question.options || []).map((opt) => (
+                            <option key={opt} value={opt}>
+                                {opt}
+                            </option>
+                        ))}
+                    </select>
                 );
 
             case "rating":
@@ -483,6 +466,19 @@ export default function FormPage() {
 
     // Thank you state
     if (formState === "thankyou") {
+        // If successUrl is set, redirect immediately
+        if (formConfig?.successUrl) {
+            window.location.href = formConfig.successUrl;
+            return (
+                <div className="pir-form-container">
+                    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+                        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-muted-foreground font-bai">กำลังเปลี่ยนหน้า...</p>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="pir-form-container">
                 <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 text-center">
@@ -509,76 +505,6 @@ export default function FormPage() {
         );
     }
 
-    // Confirmation state
-    if (formState === "confirmation" && formConfig) {
-        return (
-            <div className="pir-form-container">
-                <div className="max-w-2xl mx-auto py-6 px-4">
-                    <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground mb-2">
-                        ตรวจสอบข้อมูลก่อนส่ง
-                    </h2>
-                    <p className="text-muted-foreground font-bai mb-6">
-                        กรุณาตรวจสอบคำตอบของคุณก่อนยืนยันการส่ง
-                    </p>
-
-                    <div className="space-y-4 mb-8">
-                        {formConfig.questions.map((q, index) => {
-                            const value = formData[q.id];
-                            let displayValue = "-";
-
-                            if (q.type === "choices" && q.multiple && Array.isArray(value)) {
-                                displayValue = value.length > 0 ? value.join(", ") : "-";
-                            } else if (q.type === "rating" && typeof value === "number") {
-                                displayValue = value > 0 ? `${value}/${q.maxRating || 5} ดาว` : "-";
-                            } else if (q.type === "file" && value instanceof File) {
-                                displayValue = value.name;
-                            } else if (typeof value === "string" && value) {
-                                displayValue = value;
-                            }
-
-                            return (
-                                <div
-                                    key={q.id}
-                                    className="p-4 bg-card rounded-lg border border-border"
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-sm text-muted-foreground font-bai">
-                                            {index + 1}.
-                                        </span>
-                                        <div className="flex-1">
-                                            <p className="font-medium font-bai text-foreground">
-                                                {q.label}
-                                            </p>
-                                            <p className="text-muted-foreground font-bai mt-1">
-                                                {displayValue}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={() => setFormState("form")}
-                            className="flex-1 font-bai"
-                        >
-                            แก้ไขคำตอบ
-                        </Button>
-                        <Button
-                            onClick={handleSubmit}
-                            className="flex-1 font-bai"
-                        >
-                            ยืนยันส่งคำตอบ
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     // Submitting state
     if (formState === "submitting") {
         return (
@@ -595,17 +521,32 @@ export default function FormPage() {
         );
     }
 
-    // Form state
-    if (!formConfig || !currentQuestion) return null;
+    // Form state - Single page form
+    if (!formConfig) return null;
 
-    const isLastQuestion = currentQuestionIndex === formConfig.questions.length - 1;
-    const isFirstQuestion = currentQuestionIndex === 0;
+    // Handle form submission
+    const onFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (validateAll()) {
+            handleSubmit();
+        }
+    };
 
     return (
         <div className="pir-form-container">
             <div className="max-w-2xl mx-auto py-6 px-4">
                 {/* Header */}
                 <div className="mb-8">
+                    {/* Logo */}
+                    {formConfig.logoUrl && (
+                        <div className="flex justify-center mb-6">
+                            <img
+                                src={formConfig.logoUrl}
+                                alt="Logo"
+                                className="h-12 md:h-16 object-contain"
+                            />
+                        </div>
+                    )}
                     <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground">
                         {formConfig.title}
                     </h1>
@@ -616,85 +557,65 @@ export default function FormPage() {
                     )}
                 </div>
 
-                {/* Progress */}
-                <ProgressBar
-                    current={answeredCount}
-                    total={formConfig.questions.length}
-                    className="mb-8"
-                />
-
-                {/* Question */}
-                <div className="pir-form-question mb-8">
-                    <div className="mb-4">
-                        <span className="text-sm text-muted-foreground font-bai">
-                            คำถามที่ {currentQuestionIndex + 1}
-                        </span>
-                        <h2 className="pir-form-label text-lg md:text-xl font-medium font-bai text-foreground mt-1">
-                            {currentQuestion.label}
-                            {currentQuestion.required && (
-                                <span className="text-destructive ml-1">*</span>
-                            )}
-                        </h2>
-                        {currentQuestion.description && (
-                            <p className="pir-form-description text-sm text-muted-foreground font-bai mt-1">
-                                {currentQuestion.description}
-                            </p>
-                        )}
-                    </div>
-
-                    {renderQuestionInput(currentQuestion)}
-
-                    {validationErrors[currentQuestion.id] && (
-                        <p className="text-sm text-destructive font-bai mt-2">
-                            {validationErrors[currentQuestion.id]}
-                        </p>
-                    )}
-                </div>
-
-                {/* Navigation */}
-                <div className="flex items-center justify-between">
-                    <Button
-                        variant="ghost"
-                        onClick={goToPrevious}
-                        disabled={isFirstQuestion}
-                        className="font-bai"
-                    >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        ก่อนหน้า
-                    </Button>
-
-                    {isLastQuestion ? (
-                        <Button onClick={goToConfirmation} className="font-bai">
-                            ตรวจสอบคำตอบ
-                            <Check className="h-4 w-4 ml-1" />
-                        </Button>
-                    ) : (
-                        <Button onClick={goToNext} className="font-bai">
-                            ถัดไป
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                    )}
-                </div>
-
-                {/* Question dots */}
-                <div className="flex items-center justify-center gap-2 mt-8">
-                    {formConfig.questions.map((_, index) => (
-                        <button
-                            key={index}
-                            type="button"
-                            onClick={() => setCurrentQuestionIndex(index)}
+                {/* Form */}
+                <form onSubmit={onFormSubmit} className="space-y-8">
+                    {/* All Questions */}
+                    {formConfig.questions.map((question, index) => (
+                        <div
+                            key={question.id}
+                            id={`question-${question.id}`}
                             className={cn(
-                                "w-2 h-2 rounded-full transition-all",
-                                index === currentQuestionIndex
-                                    ? "w-6 bg-primary"
-                                    : formData[formConfig.questions[index].id]
-                                        ? "bg-primary/50"
-                                        : "bg-muted-foreground/30"
+                                "pir-form-question p-6 rounded-xl border-2 transition-colors",
+                                validationErrors[question.id]
+                                    ? "border-destructive/50 bg-destructive/5"
+                                    : "border-border bg-card"
                             )}
-                            aria-label={`Go to question ${index + 1}`}
-                        />
+                        >
+                            <div className="mb-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full font-bai">
+                                        {index + 1} / {formConfig.questions.length}
+                                    </span>
+                                    {question.required && (
+                                        <span className="text-xs text-destructive font-bai">จำเป็น</span>
+                                    )}
+                                </div>
+                                <h2 className="pir-form-label text-lg md:text-xl font-medium font-bai text-foreground">
+                                    {question.label}
+                                </h2>
+                                {question.description && (
+                                    <p className="pir-form-description text-sm text-muted-foreground font-bai mt-1">
+                                        {question.description}
+                                    </p>
+                                )}
+                            </div>
+
+                            {renderQuestionInput(question)}
+
+                            {validationErrors[question.id] && (
+                                <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1">
+                                    <AlertCircle className="h-4 w-4" />
+                                    {validationErrors[question.id]}
+                                </p>
+                            )}
+                        </div>
                     ))}
-                </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-4">
+                        <Button
+                            type="submit"
+                            size="lg"
+                            className="w-full h-14 text-lg font-bai rounded-xl"
+                        >
+                            <Check className="h-5 w-5 mr-2" />
+                            ส่งคำตอบ
+                        </Button>
+                        <p className="text-center text-sm text-muted-foreground font-bai mt-3">
+                            กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนกดส่ง
+                        </p>
+                    </div>
+                </form>
             </div>
         </div>
     );

@@ -29,7 +29,7 @@ interface DynamicFormProps {
 type FormState = "loading" | "error" | "success" | "empty";
 
 export const DynamicForm = ({
-    apiUrl = "https://auto.pirsquare.net/webhook-test/pir/form",
+    apiUrl = import.meta.env.VITE_FORM_FETCH_URL || "https://auto.pirsquare.net/webhook-test/pir/form",
     onSubmit,
     className = "",
 }: DynamicFormProps) => {

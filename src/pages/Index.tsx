@@ -116,7 +116,7 @@ const Index = () => {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch('https://auto.pirsquare.net/webhook/pir/aitest', {
+      const response = await fetch(import.meta.env.VITE_AI_TEST_URL || 'https://auto.pirsquare.net/webhook/pir/aitest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -351,7 +351,7 @@ const Index = () => {
     console.log("Submitting answers:", submissionData);
 
     try {
-      const response = await fetch('https://auto.pirsquare.net/webhook/pir/submit', {
+      const response = await fetch(import.meta.env.VITE_SUBMIT_URL || 'https://auto.pirsquare.net/webhook/pir/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

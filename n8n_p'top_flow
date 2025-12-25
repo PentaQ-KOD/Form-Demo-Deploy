@@ -1,0 +1,1315 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "respondWith": "allIncomingItems",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.4,
+            "position": [
+                1136,
+                16
+            ],
+            "id": "9405cf4c-73ae-4f7a-b50f-2f6efbc96dab",
+            "name": "Respond to Webhook"
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw",
+                    "mode": "list",
+                    "cachedResultName": "PiR AI Assessment Test",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": 884448028,
+                    "mode": "list",
+                    "cachedResultName": "test",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit#gid=884448028"
+                },
+                "filtersUI": {
+                    "values": [
+                        {
+                            "lookupColumn": "path",
+                            "lookupValue": "={{ $json.body.quizid }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                496,
+                16
+            ],
+            "id": "4b12e9ec-95dd-4a11-86ac-5ac10af31f46",
+            "name": "get path",
+            "alwaysOutputData": true,
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "JvSAP3Ilisdg2nEn",
+                    "name": "Top's Google Sheets"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw",
+                    "mode": "list",
+                    "cachedResultName": "PiR AI Assessment Test",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "quiz",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit#gid=0"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                816,
+                -96
+            ],
+            "id": "c17db300-d917-4ae6-908d-d457a21e3abb",
+            "name": "get quiz",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "JvSAP3Ilisdg2nEn",
+                    "name": "Top's Google Sheets"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "b984fe08-59fa-40ff-9707-9eaa257691d1",
+                            "leftValue": "={{ $json.customer }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "string",
+                                "operation": "notEmpty",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                656,
+                16
+            ],
+            "id": "e8e8a992-e958-480e-9851-3c8e0d2d5257",
+            "name": "If"
+        },
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "pir/submit",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [
+                256,
+                -576
+            ],
+            "id": "f8392ed5-1d1e-4949-85e1-600190a33b2d",
+            "name": "Submission Webhook",
+            "webhookId": "bc7f97dc-1308-4af4-9f54-6e18cb3d2e89"
+        },
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "pir/aitest",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [
+                336,
+                16
+            ],
+            "id": "6951ea4a-5c34-4f86-9699-ab07da16c179",
+            "name": "Fetch Webhook",
+            "webhookId": "a77cbad6-c136-46f1-bd06-d435a94aefa5"
+        },
+        {
+            "parameters": {
+                "mode": "raw",
+                "jsonOutput": "{\n  \"customer\": \"not found\"\n}\n",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                992,
+                80
+            ],
+            "id": "c0f74532-a1af-4d56-b883-8adadf62a250",
+            "name": "quiz id not found"
+        },
+        {
+            "parameters": {
+                "content": "## Adding a new Submission",
+                "height": 464,
+                "width": 1312
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                192,
+                -656
+            ],
+            "typeVersion": 1,
+            "id": "0b05e2cc-c2b5-49a2-9176-55f6bcd310e3",
+            "name": "Sticky Note1"
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw",
+                    "mode": "list",
+                    "cachedResultName": "PiR AI Assessment Test",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": 1460939309,
+                    "mode": "list",
+                    "cachedResultName": "submission",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit#gid=1460939309"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "submission time": "={{ $now }}",
+                        "quiz id": "={{ $json.testId }}",
+                        "timer": "={{ $json.timer }}",
+                        "answer": "={{ $('Submission Webhook').first().json.body.answers }}",
+                        "tester email": "={{ $json.testerEmail }}",
+                        "tester name": "={{ $json.testerName }}",
+                        "customer": "={{ $json.customerName }}",
+                        "quiz name": "={{ $json.testName }}",
+                        "max": "={{ $json.totalMaxScore }}",
+                        "score": "={{ $json.totalScore }}",
+                        "percentage": "={{ $json.totalPercentage }}",
+                        "competency score": "={{ $json.competencyScores }}",
+                        "missing q": "={{ $json.missingQuestions }}"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "submission time",
+                            "displayName": "submission time",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "quiz id",
+                            "displayName": "quiz id",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "quiz name",
+                            "displayName": "quiz name",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "customer",
+                            "displayName": "customer",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "tester name",
+                            "displayName": "tester name",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "tester email",
+                            "displayName": "tester email",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "answer",
+                            "displayName": "answer",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "timer",
+                            "displayName": "timer",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "DATE",
+                            "displayName": "DATE",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": true
+                        },
+                        {
+                            "id": "max",
+                            "displayName": "max",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "score",
+                            "displayName": "score",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "percentage",
+                            "displayName": "percentage",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "competency score",
+                            "displayName": "competency score",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "missing q",
+                            "displayName": "missing q",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                1376,
+                -640
+            ],
+            "id": "8151db53-9958-4dba-9fd9-e8b09c1bffda",
+            "name": "Adding new submission",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "JvSAP3Ilisdg2nEn",
+                    "name": "Top's Google Sheets"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "content": "# Load Customer --> Quiz --> Show",
+                "height": 416,
+                "width": 1008,
+                "color": 4
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                256,
+                -144
+            ],
+            "typeVersion": 1,
+            "id": "16743bde-d268-41e7-97a8-5021256a2798",
+            "name": "Sticky Note2"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.4,
+            "position": [
+                432,
+                -784
+            ],
+            "id": "5de978d2-a4a5-4f4c-8837-0a6831877b76",
+            "name": "Respond Added"
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw",
+                    "mode": "list",
+                    "cachedResultName": "PiR AI Assessment Test",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": 884448028,
+                    "mode": "list",
+                    "cachedResultName": "test",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit#gid=884448028"
+                },
+                "filtersUI": {
+                    "values": [
+                        {
+                            "lookupColumn": "path",
+                            "lookupValue": "={{ $json.body['test id'] }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                416,
+                -576
+            ],
+            "id": "aa08c905-bd9c-4b2d-a497-bfb0c1f2818c",
+            "name": "get test setting",
+            "alwaysOutputData": true,
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "JvSAP3Ilisdg2nEn",
+                    "name": "Top's Google Sheets"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "content": "## Evaluate free form answer type",
+                "height": 336,
+                "width": 544,
+                "color": 3
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                720,
+                -720
+            ],
+            "typeVersion": 1,
+            "id": "8c0ec70c-c7eb-4441-ab43-c2e1d261b761",
+            "name": "Sticky Note3"
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw",
+                    "mode": "list",
+                    "cachedResultName": "PiR AI Assessment Test",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "quiz",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mDqGrOynxuSOOPYEYe-M_ZatZPAb40nFn4efzW70EEw/edit#gid=0"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                416,
+                -400
+            ],
+            "id": "3e39f111-0f19-4977-a6f6-0f26deef8e55",
+            "name": "get quiz data",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "JvSAP3Ilisdg2nEn",
+                    "name": "Top's Google Sheets"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Helper: Fisher–Yates shuffle\nfunction shuffle(array) {\n  const arr = [...array];\n  for (let i = arr.length - 1; i > 0; i--) {\n    const j = Math.floor(Math.random() * (i + 1));\n    [arr[i], arr[j]] = [arr[j], arr[i]];\n  }\n  return arr;\n}\n\n// 1) Get customer data from \"get path\" node (assumes 1 item)\nconst customer = $node['get path'].json;\nif (!customer) {\n  throw new Error('No customer data found on node \"get path\".');\n}\n\n// 2) Get quiz data from current input (all items from \"get quiz\")\nconst quizData = items.map(item => item.json);\n\n// 3) Parse question id list from customer, e.g. \"1,2,3,39,40\"\nconst questionIdList = String(customer['question id'] || '')\n  .split(',')\n  .map(id => parseInt(id.trim(), 10))\n  .filter(n => !isNaN(n));\n\n// 4) Filter quiz questions by those IDs\nlet selectedQuizzes = quizData.filter(q =>\n  questionIdList.includes(Number(q.id))\n);\n\n// Keep original order unless random question is true\nselectedQuizzes.sort(\n  (a, b) =>\n    questionIdList.indexOf(Number(a.id)) -\n    questionIdList.indexOf(Number(b.id))\n);\n\n// 5) Flags\nconst randomQuestions = String(customer['random question']).toLowerCase() === 'true';\nconst randomChoices = String(customer['random choice']).toLowerCase() === 'true';\n\nif (randomQuestions) {\n  selectedQuizzes = shuffle(selectedQuizzes);\n}\n\n// Normalize choices — semicolon only, never comma\nfunction normalizeChoices(input) {\n  if (!input) return [];\n\n  // Case 1: Already an array\n  if (Array.isArray(input)) {\n    if (input.length === 1 && typeof input[0] === 'string') {\n      // [\"A;B;C\"]\n      return input[0]\n        .split(';')\n        .map(c => c.trim())\n        .filter(c => c.length > 0);\n    }\n\n    // [\"A\", \"B\", \"C\"] - unlikely but supported\n    return input\n      .map(x => String(x).trim())\n      .filter(x => x.length > 0);\n  }\n\n  // Case 2: A plain semicolon-separated string\n  if (typeof input === 'string') {\n    return input\n      .split(';')\n      .map(c => c.trim())\n      .filter(c => c.length > 0);\n  }\n\n  return [];\n}\n\n// 6) Build final questions\nconst questions = selectedQuizzes.map(q => {\n  let choices = [];\n\n  if (q['quiz type'] === 'choice') {\n    choices = normalizeChoices(q.choices);\n    if (randomChoices) choices = shuffle(choices);\n  }\n\n  return {\n    id: Number(q.id),\n    'quiz type': q['quiz type'],\n    question: q.question,\n    choices\n  };\n});\n\n// 7) Final JSON\nconst finalJson = {\n  customer: customer.customer,\n  logo: customer.logo,\n  'test name': customer['test name'],\n  questions\n};\n\n// 8) Return final result\nreturn [\n  {\n    json: finalJson\n  }\n];\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                976,
+                -96
+            ],
+            "id": "50ddd6b5-81f5-4ac7-bc73-11a55a4b6fb3",
+            "name": "Filter quiz numbers"
+        },
+        {
+            "parameters": {
+                "content": "## Sending Result to Tester",
+                "height": 512,
+                "width": 720,
+                "color": 6
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                1296,
+                -480
+            ],
+            "typeVersion": 1,
+            "id": "315f820b-c3e2-4e51-a06b-430f403b3b9e",
+            "name": "Sticky Note4"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "f6ae6775-7be6-48c9-8b94-9747af6ccaa1",
+                            "leftValue": "={{ $('get test setting').first().json[\"send result\"] }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "true",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                1328,
+                -336
+            ],
+            "id": "7790ad1f-0a87-4066-ab1d-7f11fe5a33e1",
+            "name": "Req to Send"
+        },
+        {
+            "parameters": {
+                "language": "python",
+                "pythonCode": "# n8n Python Code node: Combine MCQ + AI-Scored Typing + Test Meta\n# Mode: Run once for all items\n\nimport json\n\nitems = _input.all()\n\ndef get_json(item):\n    # n8n sometimes wraps data in {\"json\": {...}}\n    return item.get(\"json\", item)\n\ndata1 = get_json(items[0]) if len(items) > 0 else {}\ndata2 = get_json(items[1]) if len(items) > 1 else {}\n\nchoice_questions = data1.get(\"choiceQuestions\", [])\nai_outputs_wrapped = data2.get(\"output\", [])\n\ndef normalize_text(v):\n    if v is None:\n        return \"\"\n    return str(v).strip()\n\n# === Get Submission Webhook data ===\nsubmission_item = _(\"Submission Webhook\").first()\nsubmission = submission_item.json if submission_item else None\n\nbody = {}\nif submission is not None:\n    # 1) Prefer attribute .body\n    body_raw = getattr(submission, \"body\", None)\n\n    # 2) Fallback to dict-style \"body\" key\n    if body_raw is None and isinstance(submission, dict):\n        body_raw = submission.get(\"body\", {})\n\n    if body_raw is None:\n        body_raw = {}\n\n    # 3) Force-convert to a plain Python dict\n    try:\n        body = json.loads(json.dumps(body_raw))\n    except Exception:\n        body = dict(body_raw) if hasattr(body_raw, \"items\") else {}\n\nanswers_map = body.get(\"answers\", {})  # {\"39\": \"...\", \"40\": \"...\"}\n\n# === Get typing questions (with userAnswer) from \"Filter Typing Q\" ===\ntyping_questions = []\ntyping_item = _(\"Filter Typing Q\").first()\nif typing_item:\n    tjson = typing_item.json if hasattr(typing_item, \"json\") else typing_item\n    if isinstance(tjson, dict):\n        tqs = tjson.get(\"typingQuestions\", [])\n        if isinstance(tqs, list):\n            typing_questions = tqs\n\n# Build lookup for typing questions by normalized questionId\ntyping_lookup = {}\nfor tq in typing_questions:\n    qid = normalize_text(tq.get(\"questionId\", \"\"))\n    if qid:\n        typing_lookup[qid] = tq\n\ntotal_score = 0.0\ntotal_max_score = 0.0\n\n# competency -> {\"earned\": float, \"max\": float}\ncompetency_totals = {}\n\n# Combined list of questions where user didn't hit max\nmissing_questions = []\n\n# 1) Evaluate multiple-choice questions\nfor q in choice_questions:\n    qid = str(q.get(\"questionId\"))\n    comp = q.get(\"competency\", \"Unknown\") or \"Unknown\"\n\n    user_answer = normalize_text(q.get(\"userAnswer\"))\n    correct_answer = normalize_text(q.get(\"correctAnswer\"))\n\n    try:\n        max_score = float(q.get(\"maxScore\", 0))\n    except Exception:\n        max_score = 0.0\n\n    is_correct = user_answer != \"\" and (user_answer == correct_answer)\n    earned = max_score if is_correct else 0.0\n\n    total_score += earned\n    total_max_score += max_score\n\n    if comp not in competency_totals:\n        competency_totals[comp] = {\"earned\": 0.0, \"max\": 0.0}\n    competency_totals[comp][\"earned\"] += earned\n    competency_totals[comp][\"max\"] += max_score\n\n    # collect MCQ where user didn't hit max (wrong or empty)\n    if earned < max_score:\n        missing_questions.append({\n            \"questionId\": qid,\n            \"type\": \"choice\",\n            \"userAnswer\": user_answer,\n            \"correctAnswer\": correct_answer,\n            \"score\": earned,\n            \"maxScore\": max_score,\n        })\n\n# 2) Add AI-scored typing questions\nfor ai_item in ai_outputs_wrapped:\n    out = ai_item.get(\"output\", ai_item)  # handle {\"output\": {...}} or plain objects\n\n    comp = out.get(\"competency\", \"Unknown\") or \"Unknown\"\n\n    try:\n        earned = float(out.get(\"score\", 0))\n    except Exception:\n        earned = 0.0\n\n    try:\n        max_score = float(out.get(\"maxScore\", 0))\n    except Exception:\n        max_score = 0.0\n\n    total_score += earned\n    total_max_score += max_score\n\n    if comp not in competency_totals:\n        competency_totals[comp] = {\"earned\": 0.0, \"max\": 0.0}\n    competency_totals[comp][\"earned\"] += earned\n    competency_totals[comp][\"max\"] += max_score\n\n    # collect typing where user didn't hit max score\n    if max_score > 0 and earned < max_score:\n        raw_qid = out.get(\"questionId\", \"\")\n        qid = normalize_text(raw_qid)\n\n        # 1) Try to get full row from Filter Typing Q\n        trow = typing_lookup.get(qid, {})\n\n        # 2) userAnswer: prefer typing row, fallback to body.answers\n        user_answer = normalize_text(\n            trow.get(\"userAnswer\", answers_map.get(qid, \"\"))\n        )\n\n        # 3) correctAnswer: from AI Agent rubrik, fallback to typing correctAnswer if needed\n        rubrik_text = normalize_text(out.get(\"rubrik\", \"\"))\n        if rubrik_text:\n            correct_answer = rubrik_text\n        else:\n            correct_answer = normalize_text(trow.get(\"correctAnswer\", \"\"))\n\n        missing_questions.append({\n            \"questionId\": qid,\n            \"type\": \"typing\",\n            \"userAnswer\": user_answer,\n            \"correctAnswer\": correct_answer,   # comes from rubrik\n            \"score\": earned,\n            \"maxScore\": max_score,\n        })\n\n# 3) Normalize competencies to 0–10 scale\ncompetency_scores = {}\nfor comp, agg in competency_totals.items():\n    max_score_comp = agg[\"max\"]\n    if max_score_comp > 0:\n        normalized = (agg[\"earned\"] / max_score_comp) * 10.0\n    else:\n        normalized = 0.0\n    competency_scores[comp] = round(normalized, 2)\n\n# 4) Total percentage\nif total_max_score > 0:\n    pct = (total_score / total_max_score) * 100.0\n    total_percentage = int(pct) if pct.is_integer() else round(pct, 2)\nelse:\n    total_percentage = 0\n\n# 5) Final output\nresult = {\n    \"testId\":       str(body.get(\"test id\")       or body.get(\"testId\", \"\")),\n    \"testName\":     str(body.get(\"test name\")     or body.get(\"testName\", \"\")),\n    \"customerName\": str(body.get(\"customer name\") or body.get(\"customerName\", \"\")),\n    \"testerName\":   str(body.get(\"tester name\")   or body.get(\"testerName\", \"\")),\n    \"testerEmail\":  str(body.get(\"tester email\")  or body.get(\"testerEmail\", \"\")),\n    \"timer\":        str(body.get(\"timer\", \"\")),\n\n    \"totalScore\": total_score,\n    \"totalMaxScore\": total_max_score,\n    \"totalPercentage\": total_percentage,\n\n    \"competencyScores\": competency_scores,\n\n    # Combined MCQ + typing where user didn't reach max\n    \"missingQuestions\": missing_questions,\n}\n\nreturn [{\"json\": result}]\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1136,
+                -336
+            ],
+            "id": "f70cb705-b5aa-43f3-8122-1cdae1a5ec7b",
+            "name": "Evaluate Score and Competency"
+        },
+        {
+            "parameters": {
+                "language": "python",
+                "pythonCode": "import base64\nimport math\nfrom datetime import datetime\n\n# ---------- Helpers ----------\ndef wrap_label(text, max_chars=16):\n    \"\"\"\n    Very simple word-wrap based on spaces.\n    Returns a list of lines.\n    \"\"\"\n    words = text.split(\" \")\n    lines = []\n    current = \"\"\n\n    for w in words:\n        if not current:\n            current = w\n        elif len(current) + 1 + len(w) <= max_chars:\n            current += \" \" + w\n        else:\n            lines.append(current)\n            current = w\n\n    if current:\n        lines.append(current)\n\n    return lines\n\n\n# ---------- Radar Chart Generator ----------\ndef create_radar_svg(competency_scores, font_base64=\"\"):\n    labels = list(competency_scores.keys())\n    values = [competency_scores[k] for k in labels]\n\n    n = len(labels)\n    if n == 0:\n        return \"\", \"\"\n\n    # ===== layout knobs =====\n    LABEL_WRAP_CHARS      = 10   # narrower → more wrapping, max ~2 lines for your labels\n    LABEL_LINE_HEIGHT     = 24   # vertical gap between label lines (px) for 20px font\n    SCORE_LABEL_GAP       = 28   # gap between score and first label line (all axes)\n    BOTTOM_LABEL_OFFSET_Y = 40   # additional downward offset for bottom axis labels\n\n    # canvas\n    width = height = 700\n    cx = width / 2          # chart stays centered\n    cy = height / 2 - 20    # move chart a bit up\n\n    max_radius = 180         # chart radius\n    label_radius = max_radius + 25\n    max_score = 10\n\n    # ----- optional embedded font -----\n    font_defs = \"\"\n    if font_base64:\n        font_defs = f\"\"\"\n      <style type=\"text/css\">\n        @font-face {{\n          font-family: 'EmbedThai';\n          src: url(\"data:font/woff2;base64,{font_base64}\") format('woff2');\n          font-weight: normal;\n          font-style: normal;\n        }}\n      </style>\n    \"\"\"\n\n    font_family = \"font-family:'EmbedThai',Tahoma,sans-serif;\"\n\n    # ----- Grid rings -----\n    rings = 5\n    ring_polygons = []\n    for r_i in range(1, rings + 1):\n        r = max_radius * (r_i / rings)\n        pts = []\n        for i in range(n):\n            angle = -math.pi / 2 + (2 * math.pi * i / n)\n            x = cx + r * math.cos(angle)\n            y = cy + r * math.sin(angle)\n            pts.append(f\"{x:.2f},{y:.2f}\")\n        ring_polygons.append(\n            f'<polygon points=\"{\" \".join(pts)}\" '\n            'fill=\"none\" stroke=\"#9ca3af\" stroke-width=\"1\" opacity=\"0.7\"/>'\n        )\n\n    # ----- Axis lines -----\n    axis_lines = []\n    for i in range(n):\n        angle = -math.pi / 2 + (2 * math.pi * i / n)\n        x = cx + max_radius * math.cos(angle)\n        y = cy + max_radius * math.sin(angle)\n        axis_lines.append(\n            f'<line x1=\"{cx:.2f}\" y1=\"{cy:.2f}\" x2=\"{x:.2f}\" y2=\"{y:.2f}\" '\n            'stroke=\"#9ca3af\" stroke-width=\"1\" opacity=\"0.9\"/>'\n        )\n\n    # ----- Data polygon -----\n    data_pts = []\n    circles = []\n    for i, v in enumerate(values):\n        angle = -math.pi / 2 + (2 * math.pi * i / n)\n        r = max(0, min(v, max_score)) / max_score * max_radius\n        x = cx + r * math.cos(angle)\n        y = cy + r * math.sin(angle)\n        data_pts.append(f\"{x:.2f},{y:.2f}\")\n        circles.append(f'<circle cx=\"{x:.2f}\" cy=\"{y:.2f}\" r=\"5\" fill=\"#000000\"/>')\n\n    data_polygon = (\n        f'<polygon points=\"{\" \".join(data_pts)}\" '\n        'fill=\"#00000040\" stroke=\"#000000\" stroke-width=\"2\"/>'\n    )\n\n    # ----- Labels (multi-line) -----\n    label_elements = []\n    for i, label in enumerate(labels):\n        value = values[i]\n        angle = -math.pi / 2 + (2 * math.pi * i / n)\n\n        # base label position\n        lx = cx + label_radius * math.cos(angle)\n        ly = cy + label_radius * math.sin(angle)\n\n        # detect bottom axis (~π/2)\n        is_bottom = abs(angle - math.pi/2) < 0.2\n        if is_bottom:\n            ly += BOTTOM_LABEL_OFFSET_Y  # move bottom label block downward\n\n        # gap between score and label for ALL axes\n        score_y = ly - SCORE_LABEL_GAP\n\n        # choose anchor based on side (4 axes)\n        if abs(angle) < 0.2:              # right\n            anchor = \"start\"\n        elif abs(abs(angle) - math.pi) < 0.2:  # left\n            anchor = \"end\"\n        elif abs(angle + math.pi/2) < 0.2:     # top\n            anchor = \"middle\"\n        else:\n            anchor = \"middle\"\n\n        # Score text\n        label_elements.append(\n            f'<text x=\"{lx:.2f}\" y=\"{score_y:.2f}\" text-anchor=\"{anchor}\" '\n            f'style=\"{font_family}font-size:36px;fill:#000000;font-weight:900;\">'\n            f'{value:.1f}</text>'\n        )\n\n        # Wrapped label text (using narrower wrap)\n        lines = wrap_label(label, max_chars=LABEL_WRAP_CHARS)\n        for j, line in enumerate(lines):\n            ly_j = ly + j * LABEL_LINE_HEIGHT\n            label_elements.append(\n                f'<text x=\"{lx:.2f}\" y=\"{ly_j:.2f}\" text-anchor=\"{anchor}\" '\n                f'style=\"{font_family}font-size:20px;fill:#4b5563;font-weight:500;\">'\n                f'{line}</text>'\n            )\n\n    # footer (kept safely under bottom label)\n    footer_y = cy + max_radius + 180\n    footer = (\n        f'<text x=\"{cx:.2f}\" y=\"{footer_y:.2f}\" text-anchor=\"middle\" '\n        f'style=\"{font_family}font-size:20px;fill:#9ca3af;\">(Max competency : 10)</text>'\n    )\n\n    svg_str = (\n        f'<svg xmlns=\"http://www.w3.org/2000/svg\" '\n        f'width=\"{width}\" height=\"{height}\" viewBox=\"0 0 {width} {height}\">'\n        f'<defs>{font_defs}</defs>'\n        + \"\".join(ring_polygons)\n        + \"\".join(axis_lines)\n        + data_polygon\n        + \"\".join(circles)\n        + \"\".join(label_elements)\n        + footer\n        + '</svg>'\n    )\n\n    svg_b64 = base64.b64encode(svg_str.encode(\"utf-8\")).decode(\"ascii\")\n    return svg_str, svg_b64\n\n\n# ---------- Email HTML Generator ----------\ndef create_html_email(data, png_filename_for_cid):\n    test_name = data.get(\"testName\", \"\")\n    tester_name = data.get(\"testerName\", \"\")\n    tester_email = data.get(\"testerEmail\", \"\")\n    customer_name = data.get(\"customerName\", \"\")\n    timer = data.get(\"timer\", \"\")\n    total = data.get(\"totalScore\", 0)\n    max_total = data.get(\"totalMaxScore\", 0)\n    pct = data.get(\"totalPercentage\", 0)\n\n    cid = f\"cid:{png_filename_for_cid}\"\n\n    return f\"\"\"<!DOCTYPE html>\n<html lang=\"th\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>รายงานผลการทดสอบ - {test_name}</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');\n  </style>\n</head>\n<body style=\"margin:0;padding:0;background:#ffffff;font-family:'Noto Sans Thai','Segoe UI',Arial,sans-serif;\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n    <tr>\n      <td align=\"center\" style=\"padding:32px 16px;\">\n        <table width=\"720\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #e5e7eb;max-width:720px;\">\n\n          <tr>\n            <td style=\"padding:32px 24px 16px;text-align:center;\">\n              <img src=\"https://storage.pirsq.ai/PiRAcademy_HZ_BLK.png\" alt=\"PiR Academy\" style=\"height:60px;width:auto;\"/>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:16px 24px 8px;text-align:center;\">\n              <h1 style=\"margin:0;font-size:42px;font-weight:700;color:#000;\">{test_name}</h1>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:24px;\">\n              <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                  <td width=\"50%\" style=\"padding:12px 0;\">\n                    <p style=\"margin:0;font-size:18px;color:#6b7280;\">ผู้ทดสอบ</p>\n                    <p style=\"margin:6px 0 0;font-size:21px;font-weight:600;color:#000;\">{tester_name}</p>\n                  </td>\n                  <td width=\"50%\" style=\"padding:12px 0;\">\n                    <p style=\"margin:0;font-size:18px;color:#6b7280;\">อีเมล</p>\n                    <p style=\"margin:6px 0 0;font-size:21px;font-weight:600;color:#000;\">{tester_email}</p>\n                  </td>\n                </tr>\n                <tr>\n                  <td width=\"50%\" style=\"padding:12px 0;\">\n                    <p style=\"margin:0;font-size:18px;color:#6b7280;\">องค์กร</p>\n                    <p style=\"margin:6px 0 0;font-size:21px;font-weight:600;color:#000;\">{customer_name}</p>\n                  </td>\n                  <td width=\"50%\" style=\"padding:12px 0;\">\n                    <p style=\"margin:0;font-size:18px;color:#6b7280;\">เวลาที่ใช้</p>\n                    <p style=\"margin:6px 0 0;font-size:21px;font-weight:600;color:#000;\">{timer}</p>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 12px;\">\n              <hr style=\"border:none;border-top:1px solid #e5e7eb;margin:0;\"/>\n            </td>\n          </tr>\n\n          <!-- SCORE + CHART SIDE BY SIDE -->\n          <tr>\n            <td style=\"padding:8px 24px 24px;\">\n              <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                  <!-- Left: total score -->\n                  <td width=\"30%\" valign=\"middle\" style=\"text-align:center;padding-right:16px;\">\n                    <p style=\"margin:0 0 8px;font-size:21px;color:#6b7280;\">คะแนนรวม</p>\n                    <p style=\"margin:0 0 4px;font-size:70px;font-weight:1000;color:#000;\">{total}/{max_total}</p>\n                    <p style=\"margin:0;font-size:28px;color:#6b7280;\">({pct}%)</p>\n                  </td>\n\n                  <!-- Right: radar chart -->\n                  <td width=\"70%\" valign=\"middle\" style=\"text-align:center;\">\n                    <img src=\"{cid}\" alt=\"AI Competency Radar Chart\" width=\"520\" height=\"520\" style=\"max-width:100%;height:auto;\"/>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n          <!-- END SCORE + CHART -->\n\n          <tr>\n            <td style=\"background:#f9fafb;padding:24px;text-align:center;border-top:1px solid #e5e7eb;\">\n              <p style=\"margin:0 0 6px;font-size:18px;color:#6b7280;\">Copyright 2025 PiR Academy</p>\n              <p style=\"margin:0;font-size:16px;color:#9ca3af;\">รายงานนี้สร้างโดยระบบ AI Agent Automation</p>\n            </td>\n          </tr>\n\n        </table>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\"\"\"\n\n\n# ---------- n8n main ----------\nout_items = []\nfor item in items:\n    data = item.get(\"json\", {})\n\n    # get base64 font from previous \"Font Noto\" Set node\n    font_b64 = data.get(\"fontbase64\", \"\")\n\n    svg_raw, svg_b64 = create_radar_svg(\n        data.get(\"competencyScores\", {}),\n        font_base64=font_b64\n    )\n\n    dt_str = datetime.now().strftime(\"%Y-%m-%d_%H-%M-%S\")\n    svg_filename = f\"chart_{dt_str}.svg\"\n    png_filename = f\"chart_{dt_str}.png\"\n\n    html = create_html_email(data, png_filename)\n\n    tester_name = data.get(\"testerName\", \"\")\n    subject = f\"ผลการทดสอบคุณ {tester_name} ชุดแบบทดสอบความรู้ด้าน AI by PiR Academy\"\n\n    out_items.append({\n        \"json\": {\n            \"html\": html,\n            \"subject\": subject,\n            \"svgRaw\": svg_raw,\n            \"svgBase64\": svg_b64,\n            \"svgFilename\": svg_filename,\n            \"pngFilename\": png_filename,\n        }\n    })\n\nreturn out_items\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1648,
+                -432
+            ],
+            "id": "3da20b86-86ec-480e-aa61-d1d0707df29f",
+            "name": "Create HTML Result"
+        },
+        {
+            "parameters": {
+                "operation": "toBinary",
+                "sourceProperty": "svgBase64",
+                "options": {
+                    "fileName": "={{ $json.svgFilename }}",
+                    "mimeType": "image/svg+xml"
+                }
+            },
+            "type": "n8n-nodes-base.convertToFile",
+            "typeVersion": 1.1,
+            "position": [
+                1808,
+                -432
+            ],
+            "id": "e0a12096-d8ba-4944-a203-5492fbc74151",
+            "name": "Convert to Image"
+        },
+        {
+            "parameters": {
+                "operation": "uploadFile",
+                "additionalFieldsFile": {}
+            },
+            "type": "n8n-nodes-cloudinary.cloudinary",
+            "typeVersion": 1,
+            "position": [
+                1488,
+                -256
+            ],
+            "id": "b91a7f81-ce20-4552-83a6-d3ae15fdf0a2",
+            "name": "Upload an asset from file data",
+            "credentials": {
+                "cloudinaryApi": {
+                    "id": "31wvpBySgKYheYvk",
+                    "name": "Cloudinary account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// ============ 1. Get data from other nodes ============\n\n// From \"Create HTML Result\" (HTML + subject + filenames)\nconst htmlItem = $items('Create HTML Result')[0].json;\n\n// From \"Evaluate Score and Competency\" (tester info)\nconst evalItem = $items('Evaluate Score and Competency')[0].json;\n\n// From the merged item (Cloudinary + BCC + PNG binary)\nconst merged = $input.item;\n\n// ---------- Basic fields ----------\nconst html        = htmlItem.html || '';\nconst subject     = htmlItem.subject || 'ผลการทดสอบ AI โดย PiR Academy';\nconst pngFilename = htmlItem.pngFilename || 'chart.png';\n\n// Email addresses\nconst from = 'PiR Academy Evaluation AI Agent <admin@piracademy.com>';\nconst to   = evalItem.testerEmail || 'kampol@gmail.com';\nconst bcc  = (merged.json.bcc || '').trim();  // comes from \"set BCC\" via Merge\n\n// CID = same as PNG filename\nconst cidName = pngFilename;\n\n// ---------- Binary image data ----------\nif (!merged.binary || !merged.binary.data || !merged.binary.data.data) {\n  throw new Error('PNG binary data not found on current item (expected at binary.data.data)');\n}\nconst imageBinary = merged.binary.data.data;\nconst imageBase64 = imageBinary.toString('base64');\n\n// ============ 1.5 Encode subject as UTF-8 Base64 (RFC 2047) ============\nconst encodedSubject =\n  `=?UTF-8?B?${Buffer.from(subject, 'utf8').toString('base64')}?=`;\n\n// ============ 2. Build MIME structure ============\n\nconst ts = Date.now();\nconst boundaryMixed = 'mixed_' + ts;\nconst boundaryAlt   = 'alt_' + ts;\nconst boundaryRel   = 'rel_' + ts;\n\nlet mime =\n`From: ${from}\nTo: ${to}\n${bcc ? `Bcc: ${bcc}\\n` : ''}Subject: ${encodedSubject}\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"${boundaryMixed}\"\n\n--${boundaryMixed}\nContent-Type: multipart/alternative; boundary=\"${boundaryAlt}\"\n\n--${boundaryAlt}\nContent-Type: multipart/related; boundary=\"${boundaryRel}\"\n\n--${boundaryRel}\nContent-Type: text/html; charset=\"UTF-8\"\nContent-Transfer-Encoding: 7bit\n\n${html}\n\n--${boundaryRel}\nContent-Type: image/png\nContent-Transfer-Encoding: base64\nContent-ID: <${cidName}>\nContent-Disposition: inline; filename=\"${cidName}\"\n\n${imageBase64}\n\n--${boundaryRel}--\n\n--${boundaryAlt}--\n\n--${boundaryMixed}--`;\n\n// ============ 3. Base64url encode for Gmail ============\n\nconst raw = Buffer.from(mime)\n  .toString('base64')\n  .replace(/\\+/g, '-')\n  .replace(/\\//g, '_')\n  .replace(/=+$/, '');\n\nreturn [\n  {\n    json: {\n      raw,\n    },\n  },\n];\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1728,
+                -96
+            ],
+            "id": "ee08299b-30cc-4ecf-b9ad-35e16c434b63",
+            "name": "Build MIME for Gmail"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "gmailOAuth2",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "raw",
+                            "value": "={{ $json[\"raw\"] }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.3,
+            "position": [
+                1888,
+                -192
+            ],
+            "id": "d9c8229b-4895-4368-9b7f-227e07c37e80",
+            "name": "Send GMAIL",
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "Kv3ySnsdX1rdt55e",
+                    "name": "Admin@piracademy"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "url": "={{\n  'https://res.cloudinary.com/dy6nuei0n/image/upload/f_png/' +\n  $json[\"public_id\"] + '.png'\n}}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "file"
+                        }
+                    }
+                }
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.3,
+            "position": [
+                1488,
+                -96
+            ],
+            "id": "c25ed7b5-3c0e-4e4d-8169-90878faca69a",
+            "name": "Get PNG Chart"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "cfa0c253-55b2-47ab-a5e6-c436e4bc2854",
+                            "name": "fontbase64",
+                            "value": "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",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "includeOtherFields": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                1488,
+                -432
+            ],
+            "id": "b7ada1ef-8d88-47e8-a7e0-8f6d240b9e89",
+            "name": "Font Noto"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=user's answer : {{ $json.userAnswer }}\nquestion id : {{ $json.questionId }}",
+                "hasOutputParser": true,
+                "options": {
+                    "systemMessage": "=Act as a test evaluator,\nEvaluation's criteria :\n{{ $json.correctAnswer }}\n\nQuestion:\n{{ $json.question }}\n\nMax Score: {{ $json.maxScore }}\nCompetency: {{ $json.competency }}\nWrite rubrik comment no longer than 200 characters. Be precise only user's missing part without repeat user's answer and still show which part you do not give full score."
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3,
+            "position": [
+                960,
+                -640
+            ],
+            "id": "7ed154da-24bc-431c-bee3-faaf94df2f13",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "fieldToSplitOut": "typingQuestions",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.splitOut",
+            "typeVersion": 1,
+            "position": [
+                784,
+                -640
+            ],
+            "id": "281fe536-002d-4895-890b-d53c10ba8944",
+            "name": "Split Out"
+        },
+        {
+            "parameters": {
+                "aggregate": "aggregateAllItemData",
+                "destinationFieldName": "output",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.aggregate",
+            "typeVersion": 1,
+            "position": [
+                784,
+                -288
+            ],
+            "id": "8dca44e3-e329-4d98-873c-5ccae194204c",
+            "name": "Aggregate"
+        },
+        {
+            "parameters": {},
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [
+                960,
+                -336
+            ],
+            "id": "048cc39b-10aa-4a66-b925-dd4799f7d896",
+            "name": "Merge"
+        },
+        {
+            "parameters": {
+                "language": "python",
+                "pythonCode": "# 1) Inputs\nquiz_items = _input.all()                           # main input: quiz data (question library)\nsubmission = _(\"Submission Webhook\").first().json   # reference the webhook\n\nbody = submission.get(\"body\", {})\nanswers = body.get(\"answers\", {})                   # {\"questionId\": \"user answer\"}\n\ntyping_questions = []\n\n# 2) Process quiz items\nfor item in quiz_items:\n    row = item.get(\"json\", item)\n\n    qid = str(row.get(\"id\"))\n    q_type = str(row.get(\"quiz type\", \"\")).strip().lower()\n\n    # Filter:\n    #  - quiz type = \"typing\"\n    #  - AND question id appears in the user's submitted answers\n    if q_type != \"typing\":\n        continue\n\n    if qid not in answers:\n        continue\n\n    question_text = row.get(\"question\", \"\")\n    user_answer = answers.get(qid, \"\")\n    correct_answer = row.get(\"correct answer\", \"\")\n\n    # max score (stored in \"score\" column)\n    try:\n        max_score = float(row.get(\"score\", 0))\n    except Exception:\n        max_score = 0\n\n    # competency (new!)\n    competency = row.get(\"competency\", None)\n\n    typing_questions.append({\n        \"questionId\": qid,\n        \"question\": question_text,\n        \"userAnswer\": user_answer,\n        \"correctAnswer\": correct_answer,\n        \"maxScore\": max_score,\n        \"competency\": competency                       # added field\n    })\n\n# 3) Output\nreturn [{\n    \"json\": {\n        \"typingQuestions\": typing_questions\n    }\n}]\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                592,
+                -640
+            ],
+            "id": "89559cbc-c6eb-41d8-af96-045a65d9cd9f",
+            "name": "Filter Typing Q"
+        },
+        {
+            "parameters": {
+                "language": "python",
+                "pythonCode": "# 1) Inputs\nquiz_items = _input.all()                           # main input: quiz data (question library)\nsubmission = _(\"Submission Webhook\").first().json   # reference by node name\n\nbody = submission.get(\"body\", {})\nanswers = body.get(\"answers\", {})                   # {\"questionId\": \"user answer\"}\n\nchoice_questions = []\n\n# 2) Process quiz items\nfor item in quiz_items:\n    row = item.get(\"json\", item)\n\n    qid = str(row.get(\"id\"))\n    q_type = str(row.get(\"quiz type\", \"\")).strip().lower()\n\n    # Keep only:\n    #  - quiz type = \"choice\"\n    #  - AND question id appears in the user's submitted answers\n    if q_type != \"choice\":\n        continue\n\n    if qid not in answers:\n        continue\n\n    question_text = row.get(\"question\", \"\")\n    user_answer = answers.get(qid, \"\")\n    correct_answer = row.get(\"correct answer\", \"\")\n\n    # max score is stored in \"score\" column\n    try:\n        max_score = float(row.get(\"score\", 0))\n    except Exception:\n        max_score = 0\n\n    # competency column (adjust the key name if your sheet uses something else)\n    competency = row.get(\"competency\", None)\n\n    # options: adjust this depending on how your sheet stores choices\n    # Example 1: all options in a single \"options\" column (JSON/string/list)\n    options = row.get(\"options\", [])\n\n    # Example 2 (uncomment if you use separate columns like \"choice 1\", \"choice 2\", ...)\n    # options = [\n    #     row.get(\"choice 1\"),\n    #     row.get(\"choice 2\"),\n    #     row.get(\"choice 3\"),\n    #     row.get(\"choice 4\"),\n    # ]\n    # options = [o for o in options if o not in (None, \"\")]\n\n    choice_questions.append({\n        \"questionId\": qid,\n        \"question\": question_text,\n        \"options\": options,\n        \"userAnswer\": user_answer,\n        \"correctAnswer\": correct_answer,\n        \"maxScore\": max_score,\n        \"competency\": competency,\n    })\n\n# 3) Output\nreturn [{\n    \"json\": {\n        \"choiceQuestions\": choice_questions\n    }\n}]\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                592,
+                -400
+            ],
+            "id": "3d588624-6380-4800-949b-ee762f41b357",
+            "name": "Filter Choice Q"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "59dd5f1f-048b-4c07-b4f1-2b83ad223eb4",
+                            "name": "bcc",
+                            "value": "admin@piracademy.com",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                1584,
+                112
+            ],
+            "id": "1213f81b-f2d4-4012-9f2c-c8b7beb6a499",
+            "name": "set BCC"
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "combineBy": "combineByPosition",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [
+                1728,
+                -240
+            ],
+            "id": "dfc2be24-ae61-4e1d-814d-e3694c16eb72",
+            "name": "Merge BCC"
+        },
+        {
+            "parameters": {
+                "content": "## Set BCC email address here",
+                "height": 240,
+                "width": 288
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                1488,
+                32
+            ],
+            "typeVersion": 1,
+            "id": "7702b05e-f52e-4f54-8aa8-0ae457a81563",
+            "name": "Sticky Note5"
+        },
+        {
+            "parameters": {
+                "content": "## Evaluate choice question and scoring",
+                "height": 240,
+                "width": 544,
+                "color": 3
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                720,
+                -400
+            ],
+            "typeVersion": 1,
+            "id": "bcfb253f-0afb-42a4-bc7a-372a3505cccf",
+            "name": "Sticky Note6"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                960,
+                -512
+            ],
+            "id": "f8703594-64db-4c7f-9469-f2646eefb448",
+            "name": "Gemini Model",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "KZvTYlTD1VgbSwhS",
+                    "name": "Top's Gemini API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsonSchemaExample": "{\n  \"questionId\": \"39\",\n  \"score\": 3,\n  \"maxScore\": 5,\n  \"competency\": \"ทักษะการ Prompt\",\n  \"rubrik\": \"ไม่มีการระบุความยาวของคำตอบ\"\n}"
+            },
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1.3,
+            "position": [
+                1104,
+                -512
+            ],
+            "id": "0c0478b4-cb31-40f8-b428-77b1e33a9183",
+            "name": "Structured Output"
+        }
+    ],
+    "connections": {
+        "get path": {
+            "main": [
+                [
+                    {
+                        "node": "If",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "get quiz": {
+            "main": [
+                [
+                    {
+                        "node": "Filter quiz numbers",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "If": {
+            "main": [
+                [
+                    {
+                        "node": "get quiz",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "quiz id not found",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Submission Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "get test setting",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Respond Added",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "get path",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "quiz id not found": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Adding new submission": {
+            "main": [
+                []
+            ]
+        },
+        "get test setting": {
+            "main": [
+                [
+                    {
+                        "node": "get quiz data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "get quiz data": {
+            "main": [
+                [
+                    {
+                        "node": "Filter Typing Q",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Filter Choice Q",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Filter quiz numbers": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Req to Send": {
+            "main": [
+                [
+                    {
+                        "node": "Font Noto",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Evaluate Score and Competency": {
+            "main": [
+                [
+                    {
+                        "node": "Adding new submission",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Req to Send",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create HTML Result": {
+            "main": [
+                [
+                    {
+                        "node": "Convert to Image",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Convert to Image": {
+            "main": [
+                [
+                    {
+                        "node": "Upload an asset from file data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Upload an asset from file data": {
+            "main": [
+                [
+                    {
+                        "node": "Get PNG Chart",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Build MIME for Gmail": {
+            "main": [
+                [
+                    {
+                        "node": "Send GMAIL",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get PNG Chart": {
+            "main": [
+                [
+                    {
+                        "node": "set BCC",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Merge BCC",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Font Noto": {
+            "main": [
+                [
+                    {
+                        "node": "Create HTML Result",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Aggregate",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Split Out": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Aggregate": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Merge": {
+            "main": [
+                [
+                    {
+                        "node": "Evaluate Score and Competency",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Filter Typing Q": {
+            "main": [
+                [
+                    {
+                        "node": "Split Out",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Filter Choice Q": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "set BCC": {
+            "main": [
+                [
+                    {
+                        "node": "Merge BCC",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Merge BCC": {
+            "main": [
+                [
+                    {
+                        "node": "Build MIME for Gmail",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Gemini Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structured Output": {
+            "ai_outputParser": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_outputParser",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {
+        "Submission Webhook": [
+            {
+                "headers": {
+                    "connection": "upgrade",
+                    "host": "auto.pirsquare.net",
+                    "x-real-ip": "172.68.241.77",
+                    "x-forwarded-for": "2001:fb1:13d:1266:555c:4df0:c100:a4dc, 172.68.241.77",
+                    "x-forwarded-proto": "https",
+                    "content-length": "13325",
+                    "priority": "u=1, i",
+                    "sec-ch-ua-platform": "\"macOS\"",
+                    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+                    "sec-ch-ua": "\"Chromium\";v=\"142\", \"Brave\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+                    "content-type": "application/json",
+                    "sec-ch-ua-mobile": "?0",
+                    "accept": "*/*",
+                    "sec-gpc": "1",
+                    "accept-language": "en-US,en;q=0.8",
+                    "origin": "https://aiquiz.piracademy.com",
+                    "sec-fetch-site": "cross-site",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-dest": "empty",
+                    "referer": "https://aiquiz.piracademy.com/",
+                    "accept-encoding": "gzip, br",
+                    "cf-ray": "9a919d8c8f8f4b52-BKK",
+                    "cdn-loop": "cloudflare; loops=1",
+                    "cf-connecting-ip": "2001:fb1:13d:1266:555c:4df0:c100:a4dc",
+                    "cf-ipcountry": "TH",
+                    "cf-visitor": "{\"scheme\":\"https\"}"
+                },
+                "params": {},
+                "query": {},
+                "body": {
+                    "test id": "pirsquare",
+                    "test name": "AI Team Member Test",
+                    "customer name": "Pi R SQUARE",
+                    "tester name": "Pantawat Insuphatta",
+                    "tester email": "pantawat@pirsquare.net",
+                    "answers": {
+                        "2": "ระบุชัดเจน มีบริบทของงาน และระบุผลลัพธ์ที่ต้องการ",
+                        "4": "OpenAI",
+                        "5": "ChatGPT",
+                        "6": "เข้าใจภาษามนุษย์และสร้างข้อความใหม่ได้ตามบริบท",
+                        "7": "คุณเหมียว อยากใช้ AI ให้ช่วยซื้อวัตถุดิบจากเว็บออนไลน์สำหรับอาหารมื้อเย็น",
+                        "13": "พี่มายด์ บอก AI ว่า “คุณคือนักเขียนมือโปร ระบุหัวข้อของบทความ ยาว 300 คำา โทนสนุกสนาน” เพียงแค่นั้น",
+                        "14": "บอกเฉพาะเจาะจงว่าส่วนไหนไม่ชอบและอยากปรับเปลี่ยนอย่างไร เช่น “สีเข้มเกินไป อยากได้โทนสีอ่อนและอบอุ่นกว่านี้”",
+                        "16": "ใช้โหมด Deep Search ของ Grok แล้วระบุใน prompt ให้ทำาการ research หัวข้อนั้น",
+                        "17": "ตรวจสอบ หรือ ค้นหาแหล่งข่าวนั้นด้วยวิธี Search ปกติจนพบข้อมูลเสียก่อน",
+                        "18": "บอกรายละเอียดเกี่ยวกับตำแหน่งนี้ให้ AI เช่น ข้อมูลบริษัท, หน้าที่, ทักษะ และระดับประสบการณ์ของตำแหน่งนี้ และให้ AI เป็นผู้ช่วยร่าง JD",
+                        "19": "ส่งเนื้อหาในอีเมล์ให้ AI สรุปประเด็นหลักจากอีเมลของลูกค้าก่อน แล้วจึง Prompt ให้ AI ช่วยร่างข้อความตอบกลับ พร้อมให้ทีมตรวจสอบก่อนส่งจริง",
+                        "20": "ใช้ Manus แล้ว Prompt ว่า “สร้าง Slide โดยเขียนรายงานธุรกิจเชิงกลยุทธ์ หัวข้อดังกล่าว ในโทนทางการ พร้อมระบุหัวข้อย่อยที่ต้องการ”",
+                        "22": "การให้มนุษย์ร่วมตรวจสอบ ตัดสินใจ หรือ ปรับปรุงผลลัพธ์จาก AI ก่อนนำาไปใช้จริง",
+                        "26": "AI Agent ที่เชื่อมต่อหลาย Tools และตัดสินใจดำาเนินการตามบริบท",
+                        "27": "ต้องแปลเอกสารเป็น 5 ภาษา โดยแต่ละภาษาไม่ขึ้นต่อกัน",
+                        "28": "การกำหนดขอบเขตและกฎเกณฑ์ที่ AI ต้องปฏิบัติตาม เพื่อป้องกันการตัดสินใจที่ไม่เหมาะสม",
+                        "29": "ความสมดุลระหว่างความแม่นยำา ความเร็ว และต้นทุนต่อ Request",
+                        "30": "ดึงอัตโนมัติ: ประวัติการซื้อ, ข้อมูลติดต่อ | ตรวจสอบก่อนใช้: กลยุทธ์การเจรจา, ข้อเสนอพิเศษ",
+                        "31": "เก็บประวัติการสนทนาในฐานข้อมูล และส่งบริบทที่เกี่ยวข้องให้ AI ทุกครั้งที่สนทนาใหม่",
+                        "32": "ผลลัพธ์ทางธุรกิจที่ชัดเจน เช่น เวลาที่ประหยัดได้ ต้นทุนที่ลดลง หรือ รายได้ที่เพิ่มขึ้น",
+                        "35": "ตอบตามความจริงว่าใช้ AI ช่วยร่าง แต่ตรวจสอบแล้วก่อนส่ง",
+                        "36": "AI ต้องระบุชัดเจนว่าไม่ใช่แพทย์ ไม่สามารถวินิจฉัยโรค และแนะนำาให้พบผู้เชี่ยวชาญเมื่อจำเป็น",
+                        "37": "เพิ่มเงื่อนไข: \"สรุป 5 ข้อ ใช้ภาษาที่ผู้บริหารที่ไม่มีพื้นฐานการเงินเข้าใจได้ โดยไม่ใช้ศัพท์เทคนิค\"",
+                        "38": "3 จุด",
+                        "39": "**Role:**\nคุณคือ Senior Customer Experience Data Analyst ที่มีความเชี่ยวชาญในการวิเคราะห์ข้อมูลเชิงลึก (Insights) และการวางกลยุทธ์เพื่อนำเสนอต่อคณะกรรมการบริหาร (Board of Directors)\n\n**Context:**\nฉันคือ Customer Experience Manager ปัจจุบันมีข้อมูล Raw Data เป็น Feedback จากลูกค้าจำนวน 500 รายการ ที่รวบรวมมาจาก 3 ช่องทางหลัก (Website, Application, Call Center) ในช่วง 3 เดือนที่ผ่านมา ฉันต้องการสรุปข้อมูลชุดนี้เพื่อนำเข้าที่ประชุม Board ในสัปดาห์หน้า เพื่อชี้ให้เห็นปัญหาสำคัญและของบประมาณหรือทรัพยากรในการแก้ไข\n\n**Task:**\nวิเคราะห์ข้อมูล Feedback ที่ฉันจะให้ และจัดทำรายงานสรุปตามหัวข้อต่อไปนี้:\n\n1. **Categorization & Severity (การจัดกลุ่มและความรุนแรง):**\n   - จัดกลุ่ม Feedback เป็น Categories หลักๆ (เช่น Technical Bug, UI/UX, Customer Service, Pricing, logistics ฯลฯ)\n   - ประเมินระดับความรุนแรง (Severity: Critical, Major, Minor) โดยดูจากอารมณ์ของลูกค้าและผลกระทบต่อธุรกิจ\n   - แสดงผลในรูปแบบตาราง: [Category] | [Count] | [Severity Breakdown] | [Key Issues]\n\n2. **Root Cause & Solution (วิเคราะห์สาเหตุและแนวทางแก้ไข):**\n   - เลือกปัญหา Top 3 ที่มีความรุนแรงหรือจำนวนสูงสุด\n   - วิเคราะห์สาเหตุเบื้องต้น\n   - เสนอแนวทางแก้ไข (Action Plan) แบ่งเป็น \"Quick Win\" (แก้ทันที) และ \"Long-term\" (แก้ที่ระบบ/โครงสร้าง)\n\n3. **Executive Summary (บทสรุปสำหรับผู้บริหาร):**\n   - เขียนสรุปสั้นๆ กระชับ (ไม่เกิน 1 หน้ากระดาษ)\n   - เน้นภาษาธุรกิจ (Business Language)\n   - สรุปภาพรวมความพึงพอใจ, ปัญหาที่วิกฤตที่สุดที่ต้องเร่งแก้ไข และผลลัพธ์ที่คาดว่าจะได้หากแก้ไขสำเร็จ\n\n**Tone & Style:**\n- มืออาชีพ, กระชับ, ตรงประเด็น, ใช้ข้อมูลประกอบ (Data-driven)\n- ใช้ภาษาไทยที่เป็นทางการ เหมาะสำหรับการทำ Slide นำเสนอ\n\n**Input Data:**\n[วางข้อมูลจาก Excel ที่นี่]",
+                        "40": "**Role:**\nคุณคือ \"International Business Strategy Consultant\" ชั้นนำที่มีความเชี่ยวชาญด้านตลาด E-commerce ในภูมิภาคเอเชียตะวันออกเฉียงใต้ (SEA) หน้าที่ของคุณคือช่วย Business Development Manager เตรียมข้อมูลเพื่อนำเสนอ CEO และ Board of Directors\n\n**Situation & Constraint:**\nฉันต้องการขยายธุรกิจ E-commerce ไปยังประเทศเพื่อนบ้าน แต่ฉันมีข้อมูลดิบไม่เพียงพอ ดังนั้น **คุณต้องใช้เครื่องมือ Search/Browse เพื่อค้นหาข้อมูลล่าสุด (ปี 2024-2025)** มาประกอบการวิเคราะห์ด้วยตนเอง\n\n**Objective:**\nสร้างโครงร่าง (Outline) และเนื้อหาสำหรับ Presentation จำนวน 6-8 สไลด์ เพื่อโน้มน้าวให้บอร์ดเห็นชอบในแผนการขยายธุรกิจ และเลือกประเทศเป้าหมายที่ถูกต้อง\n\n**Tasks (ขั้นตอนการทำงานของคุณ):**\n\n1.  **Research (ค้นหาข้อมูล):**\n    * ค้นหาข้อมูลตลาด E-commerce ล่าสุด (อ้างอิงแหล่งข้อมูลน่าเชื่อถือ เช่น e-Conomy SEA Report โดย Google/Temasek/Bain หรือรายงานจาก Statista)\n    * โฟกัสที่กลุ่มประเทศ: เวียดนาม, อินโดนีเซีย, มาเลเซีย, ฟิลิปปินส์, และ กัมพูชา (เลือกมาเปรียบเทียบ)\n\n2.  **Analyze (วิเคราะห์):**\n    * เปรียบเทียบ Market Size (GMV), การเติบโต (CAGR), และพฤติกรรมผู้บริโภค\n    * วิเคราะห์ความยากง่ายในการทำธุรกิจ (Logistics, Payment, Regulations)\n\n3.  **Synthesize Presentation (สร้างเนื้อหาสไลด์):**\n    เขียนเนื้อหาสำหรับแต่ละสไลด์ โดยระบุหัวข้อ, Key Message, และ Data visualization ที่ควรใช้ ดังนี้:\n\n    * **Slide 1: Executive Summary** (สรุปภาพรวมโอกาส และสิ่งที่เราขออนุมัติ)\n    * **Slide 2: Regional Landscape** (ภาพรวมตลาด E-commerce SEA ทำไมต้องไปตอนนี้?)\n    * **Slide 3: Country Comparison Matrix** (เปรียบเทียบ 3-4 ประเทศในด้าน Market Size vs. Competition vs. Ease of Entry) *ส่วนนี้สำคัญมาก ต้องมีตัวเลขประกอบ*\n    * **Slide 4: Risks & Barriers** (ความเสี่ยง: ภาษี, กฎหมาย, คู่แข่งเจ้าถิ่น และวิธีรับมือ)\n    * **Slide 5: The \"Star\" Market Recommendation** (ฟันธง 1 ประเทศที่ควรไปเป็นที่แรก พร้อมเหตุผล Support เชิงกลยุทธ์ 3 ข้อ)\n    * **Slide 6: Next Steps & Timeline** (แผนงานคร่าวๆ ใน 6 เดือนแรก)\n\n**Output Requirements:**\n* **Tone:** Strategic, Convincing, Data-driven (ภาษาธุรกิจระดับสูง)\n* **Format:** แสดงผลเป็นข้อความแยกตาม Slide เพื่อให้ฉันก๊อปปี้ไปวางใน PowerPoint ได้ทันที\n* **Source:** ระบุแหล่งที่มาของตัวเลขที่ค้นหามาด้วย (เช่น \"Source: e-Conomy SEA 2024\")\n\n**Immediate Action:**\nเริ่มค้นหาข้อมูลตลาดล่าสุดเดี๋ยวนี้ และร่าง Presentation ตามโครงสร้างข้างต้น"
+                    },
+                    "timer": "00:34:02"
+                },
+                "webhookUrl": "https://auto.pirsquare.net/webhook/pir/submit",
+                "executionMode": "production"
+            }
+        ]
+    },
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "c4a432d8839f73c04d1c52b619739b20deb63b823fc0c91805299f612d5b8100"
+    }
+}

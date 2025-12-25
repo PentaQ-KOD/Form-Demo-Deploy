@@ -8,10 +8,10 @@
             "type": "n8n-nodes-base.respondToWebhook",
             "typeVersion": 1.4,
             "position": [
-                80,
-                -80
+                -576,
+                -112
             ],
-            "id": "5a1b7621-064b-454d-ba79-11c978fb1904",
+            "id": "6291569d-9097-4455-87a3-83e9ef9a8be6",
             "name": "Respond to Webhook"
         },
         {
@@ -43,10 +43,10 @@
             "type": "n8n-nodes-base.googleSheets",
             "typeVersion": 4.7,
             "position": [
-                -560,
-                -80
+                -1216,
+                -112
             ],
-            "id": "6df13792-c0c1-4f28-8a70-3c95c63f760f",
+            "id": "ccd21d92-a458-4abc-8a64-2f3119a07f9d",
             "name": "get path",
             "alwaysOutputData": true,
             "credentials": {
@@ -79,15 +79,16 @@
                     ],
                     "combinator": "and"
                 },
+                "looseTypeValidation": true,
                 "options": {}
             },
             "type": "n8n-nodes-base.if",
             "typeVersion": 2.2,
             "position": [
-                -400,
-                -80
+                -1056,
+                -112
             ],
-            "id": "5d74cf76-c709-4b1d-9cae-d012a6ab8086",
+            "id": "8c541752-a0eb-4734-adfd-fe48bb0989af",
             "name": "If"
         },
         {
@@ -100,24 +101,24 @@
             "type": "n8n-nodes-base.webhook",
             "typeVersion": 2.1,
             "position": [
-                -720,
-                -80
+                -1376,
+                -112
             ],
-            "id": "ff1531a7-efd8-4bea-ba4d-be007933d64e",
+            "id": "55b57001-92bf-42b9-a781-e11483bbd5f4",
             "name": "Fetch Webhook",
             "webhookId": "a77cbad6-c136-46f1-bd06-d435a94aefa5"
         },
         {
             "parameters": {
-                "jsCode": "const item = $input.first().json;\n\n// Parse the form definition JSON from Google Sheets\nconst formDefinition = item['form definition'];\n\ntry {\n  // form definition is stored as JSON string in the sheet\n  const parsed = JSON.parse(formDefinition);\n  \n  return [{\n    json: {\n      title: parsed.title || 'Untitled Form',\n      description: parsed.description || '',\n      questions: parsed.questions || []\n    }\n  }];\n} catch (e) {\n  return [{\n    json: {\n      error: 'Invalid form definition JSON',\n      message: e.message\n    }\n  }];\n}"
+                "jsCode": "const item = $input.first().json;\n\n// Parse the form definition JSON from Google Sheets\nconst formDefinition = item['form definition'];\n\n// Get additional config from Google Sheets columns\nconst logoUrl = item['logo url'] || '';\nconst successUrl = item['success url'] || '';\nconst responseSheet = item['response sheet'] || '';\nconst slackWebhook = item['slack webhook'] || '';\nconst notifyEmails = item['notify emails'] || '';\n\ntry {\n  let parsed = JSON.parse(formDefinition);\n  \n  // If wrapped in 'json' key (Firecrawl format), unwrap it\n  if (parsed.json && parsed.json.questions) {\n    parsed = parsed.json;\n  }\n  \n  // Build config object\n  const config = {\n    logoUrl: logoUrl || parsed.logoUrl || '',\n    successUrl: successUrl || parsed.successUrl || '',\n    responseSheet,\n    slackWebhook,\n    notifyEmails\n  };\n  \n  // Check if it's Firecrawl format with meta/fields\n  if (parsed.meta && parsed.fields) {\n    const questions = parsed.fields.map(field => {\n      const q = { id: field.name, type: field.type, label: field.label, required: field.required || false };\n      if (field.config) {\n        if (field.config.placeholder) q.placeholder = field.config.placeholder;\n        if (field.config.description) q.description = field.config.description;\n        if (field.config.options) q.options = field.config.options.map(opt => typeof opt === 'string' ? opt : opt.label);\n        if (field.config.accept_types) q.accept = field.config.accept_types;\n        if (field.config.max_file_size_mb) q.maxSize = field.config.max_file_size_mb;\n      }\n      if (q.type === 'number') q.type = 'text';\n      return q;\n    });\n    return [{ json: { title: parsed.meta.title || 'Untitled', description: parsed.meta.description || '', questions, ...config } }];\n  }\n  \n  // Standard format\n  return [{ json: { title: parsed.title || 'Untitled', description: parsed.description || '', questions: parsed.questions || [], ...config } }];\n} catch (e) {\n  return [{ json: { error: 'Invalid form definition', message: e.message } }];\n}"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                -176,
-                -192
+                -832,
+                -224
             ],
-            "id": "a0c077c4-8dbc-41e1-af63-265fc9972f3f",
+            "id": "20b99f20-5029-4114-8f9f-08068ad7bde3",
             "name": "Parse Form Definition"
         },
         {
@@ -129,10 +130,10 @@
             "type": "n8n-nodes-base.set",
             "typeVersion": 3.4,
             "position": [
-                -176,
-                -16
+                -832,
+                -48
             ],
-            "id": "b7e12a78-74d6-4f2e-9961-8c246b228589",
+            "id": "e5cb2b9e-be19-4e84-b210-fdf52ebd2b25",
             "name": "Form Not Found"
         },
         {
@@ -145,24 +146,24 @@
             "type": "n8n-nodes-base.webhook",
             "typeVersion": 2.1,
             "position": [
-                -528,
-                336
+                -1184,
+                304
             ],
-            "id": "cc5e005e-766e-48cd-9a6d-24828a344512",
+            "id": "74221757-8ff8-4ac1-9566-cafb75c20305",
             "name": "Submit Webhook",
             "webhookId": "consent-submit-webhook"
         },
         {
             "parameters": {
-                "jsCode": "const body = $input.first().json.body;\n\n// Convert answers object to string for logging\nconst answersStr = JSON.stringify(body.answers || {}, null, 2);\n\nreturn [{\n  json: {\n    'Submitted At': body.submitted_at || new Date().toISOString(),\n    'Form ID': body.form_id || '',\n    'Form Title': body.form_title || '',\n    'Answers': answersStr\n  }\n}];"
+                "jsCode": "const body = $input.first().json.body;\nconst answers = body.answers || {};\nconst questions = body.questions || [];\n\n// Config from Google Sheets (passed via frontend)\nconst notifyEmails = body.notify_emails || '';\nconst slackWebhook = body.slack_webhook || '';\nconst responseSheet = body.response_sheet || '';\n\n// Auto-detect user email: find first field with type \"email\"\nlet userEmail = '';\nfor (const q of questions) {\n  if (q.type === 'email' && answers[q.id]) {\n    userEmail = answers[q.id];\n    break;\n  }\n}\n\nreturn [{\n  json: {\n    submittedAt: body.submitted_at || new Date().toISOString(),\n    formId: body.form_id || '',\n    formTitle: body.form_title || '',\n    answers: JSON.stringify(answers, null, 2),\n    notifyEmails: notifyEmails,\n    slackWebhook: slackWebhook,\n    responseSheet: responseSheet,\n    userEmail: userEmail\n  }\n}];"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                -320,
-                336
+                -976,
+                304
             ],
-            "id": "d8caed93-5e32-401e-93ca-be99b5cdd2b5",
+            "id": "e65dfafb-5503-4202-aef6-a3e147945445",
             "name": "Format Form Submission"
         },
         {
@@ -170,17 +171,14 @@
                 "operation": "append",
                 "documentId": {
                     "__rl": true,
-                    "value": "1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg",
-                    "mode": "list",
-                    "cachedResultName": "[POOH] Dynamic Form Data",
-                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?usp=drivesdk"
+                    "value": "={{ $json.responseSheet || 'https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit#gid=61872764' }}",
+                    "mode": "url"
                 },
                 "sheetName": {
                     "__rl": true,
-                    "value": 61872764,
+                    "value": "gid=0",
                     "mode": "list",
-                    "cachedResultName": "Log_Form",
-                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit#gid=61872764"
+                    "cachedResultName": "Sheet1"
                 },
                 "columns": {
                     "mappingMode": "autoMapInputData",
@@ -191,10 +189,10 @@
             "type": "n8n-nodes-base.googleSheets",
             "typeVersion": 4.7,
             "position": [
-                -128,
-                336
+                -784,
+                304
             ],
-            "id": "6d1493d2-bc8b-429d-b322-344acaf681bd",
+            "id": "add8bf81-8a86-46f7-bc36-86ff1d80640e",
             "name": "Append to Log",
             "credentials": {
                 "googleSheetsOAuth2Api": {
@@ -212,11 +210,184 @@
             "type": "n8n-nodes-base.respondToWebhook",
             "typeVersion": 1.4,
             "position": [
-                80,
-                336
+                192,
+                304
             ],
-            "id": "3f739585-d926-4397-a3bf-bbd30f34b973",
+            "id": "6a2e0d25-cceb-47a3-8744-d7a80224c711",
             "name": "Respond Success"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "loose",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "slack-check",
+                            "leftValue": "={{ $json.slackWebhook }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "string",
+                                "operation": "notEmpty",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "looseTypeValidation": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                -576,
+                304
+            ],
+            "id": "check-slack-node",
+            "name": "Has Slack?"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{ $json.slackWebhook }}",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "text",
+                            "value": "=📝 New Form Submission\\n*{{ $json.formTitle }}*\\nForm ID: {{ $json.formId }}\\nSubmitted: {{ $json.submittedAt }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -384,
+                240
+            ],
+            "id": "send-slack-node",
+            "name": "Send Slack"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "loose",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "admin-email-check",
+                            "leftValue": "={{ $json.notifyEmails }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "string",
+                                "operation": "notEmpty",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "looseTypeValidation": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                -192,
+                304
+            ],
+            "id": "check-admin-email-node",
+            "name": "Has Admin Email?"
+        },
+        {
+            "parameters": {
+                "sendTo": "={{ $json.notifyEmails }}",
+                "subject": "=[PiR Form] New submission: {{ $json.formTitle }}",
+                "message": "=มีการกรอกฟอร์มใหม่\\n\\nForm: {{ $json.formTitle }}\\nForm ID: {{ $json.formId }}\\nSubmitted: {{ $json.submittedAt }}\\n\\nAnswers:\\n{{ $json.answers }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2.1,
+            "position": [
+                0,
+                240
+            ],
+            "id": "send-admin-email-node",
+            "name": "Send Admin Email",
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "YOUR_GMAIL_CREDENTIAL_ID",
+                    "name": "Gmail account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "loose",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "user-email-check",
+                            "leftValue": "={{ $json.userEmail }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "string",
+                                "operation": "notEmpty",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "looseTypeValidation": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                0,
+                368
+            ],
+            "id": "check-user-email-node",
+            "name": "Has User Email?"
+        },
+        {
+            "parameters": {
+                "sendTo": "={{ $json.userEmail }}",
+                "subject": "=ขอบคุณที่กรอกแบบฟอร์ม: {{ $json.formTitle }}",
+                "message": "=สวัสดีครับ/ค่ะ\\n\\nขอบคุณที่กรอกแบบฟอร์ม \"{{ $json.formTitle }}\"\\nเราได้รับข้อมูลของคุณเรียบร้อยแล้ว\\n\\nวันที่ส่ง: {{ $json.submittedAt }}\\n\\nขอบคุณครับ/ค่ะ\\nPiR Academy",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2.1,
+            "position": [
+                192,
+                432
+            ],
+            "id": "send-user-email-node",
+            "name": "Send User Email",
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "YOUR_GMAIL_CREDENTIAL_ID",
+                    "name": "Gmail account"
+                }
+            }
         }
     ],
     "connections": {
@@ -305,6 +476,93 @@
             ]
         },
         "Append to Log": {
+            "main": [
+                [
+                    {
+                        "node": "Has Slack?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Slack?": {
+            "main": [
+                [
+                    {
+                        "node": "Send Slack",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Has Admin Email?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Slack": {
+            "main": [
+                [
+                    {
+                        "node": "Has Admin Email?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Admin Email?": {
+            "main": [
+                [
+                    {
+                        "node": "Send Admin Email",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Has User Email?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Admin Email": {
+            "main": [
+                [
+                    {
+                        "node": "Has User Email?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has User Email?": {
+            "main": [
+                [
+                    {
+                        "node": "Send User Email",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Respond Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send User Email": {
             "main": [
                 [
                     {
