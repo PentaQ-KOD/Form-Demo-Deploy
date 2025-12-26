@@ -8,10 +8,10 @@
             "type": "n8n-nodes-base.respondToWebhook",
             "typeVersion": 1.4,
             "position": [
-                -576,
-                -112
+                -32,
+                64
             ],
-            "id": "6291569d-9097-4455-87a3-83e9ef9a8be6",
+            "id": "1fa5e919-7b62-42a3-a1a8-fc4e33195295",
             "name": "Respond to Webhook"
         },
         {
@@ -43,10 +43,10 @@
             "type": "n8n-nodes-base.googleSheets",
             "typeVersion": 4.7,
             "position": [
-                -1216,
-                -112
+                -704,
+                64
             ],
-            "id": "ccd21d92-a458-4abc-8a64-2f3119a07f9d",
+            "id": "44721ab1-ee20-4ecb-96e9-3ccd04f4ee51",
             "name": "get path",
             "alwaysOutputData": true,
             "credentials": {
@@ -85,10 +85,10 @@
             "type": "n8n-nodes-base.if",
             "typeVersion": 2.2,
             "position": [
-                -1056,
-                -112
+                -480,
+                64
             ],
-            "id": "8c541752-a0eb-4734-adfd-fe48bb0989af",
+            "id": "62bf5361-5d45-4851-975d-d89f7ae2bfae",
             "name": "If"
         },
         {
@@ -101,10 +101,10 @@
             "type": "n8n-nodes-base.webhook",
             "typeVersion": 2.1,
             "position": [
-                -1376,
-                -112
+                -928,
+                64
             ],
-            "id": "55b57001-92bf-42b9-a781-e11483bbd5f4",
+            "id": "12d36e23-2416-4bde-b9f0-08818b051918",
             "name": "Fetch Webhook",
             "webhookId": "a77cbad6-c136-46f1-bd06-d435a94aefa5"
         },
@@ -115,10 +115,10 @@
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                -832,
-                -224
+                -256,
+                -32
             ],
-            "id": "20b99f20-5029-4114-8f9f-08068ad7bde3",
+            "id": "bd1fdb33-8863-4c17-8c7c-972fd2505477",
             "name": "Parse Form Definition"
         },
         {
@@ -130,10 +130,10 @@
             "type": "n8n-nodes-base.set",
             "typeVersion": 3.4,
             "position": [
-                -832,
-                -48
+                -256,
+                160
             ],
-            "id": "e5cb2b9e-be19-4e84-b210-fdf52ebd2b25",
+            "id": "7a51749b-43ed-4b05-824a-6fbce0e5c24b",
             "name": "Form Not Found"
         },
         {
@@ -146,53 +146,69 @@
             "type": "n8n-nodes-base.webhook",
             "typeVersion": 2.1,
             "position": [
-                -1184,
-                304
+                -928,
+                560
             ],
-            "id": "74221757-8ff8-4ac1-9566-cafb75c20305",
+            "id": "761aeea7-0ef7-41a7-9f84-d16d8fc5e634",
             "name": "Submit Webhook",
             "webhookId": "consent-submit-webhook"
         },
         {
             "parameters": {
-                "jsCode": "const body = $input.first().json.body;\nconst answers = body.answers || {};\nconst questions = body.questions || [];\n\n// Config from Google Sheets (passed via frontend)\nconst notifyEmails = body.notify_emails || '';\nconst slackWebhook = body.slack_webhook || '';\nconst responseSheet = body.response_sheet || '';\n\n// Auto-detect user email: find first field with type \"email\"\nlet userEmail = '';\nfor (const q of questions) {\n  if (q.type === 'email' && answers[q.id]) {\n    userEmail = answers[q.id];\n    break;\n  }\n}\n\nreturn [{\n  json: {\n    submittedAt: body.submitted_at || new Date().toISOString(),\n    formId: body.form_id || '',\n    formTitle: body.form_title || '',\n    answers: JSON.stringify(answers, null, 2),\n    notifyEmails: notifyEmails,\n    slackWebhook: slackWebhook,\n    responseSheet: responseSheet,\n    userEmail: userEmail\n  }\n}];"
+                "jsCode": "const body = $input.first().json.body;\nconst answers = body.answers || {};\nconst questions = body.questions || [];\n\n// Config from Google Sheets (passed via frontend)\nconst notifyEmails = body.notify_emails || '';\nconst slackWebhook = body.slack_webhook || '';\nconst responseSheet = body.response_sheet || '';\n\n// Auto-detect user email: find first field with type \"email\"\nlet userEmail = '';\nfor (const q of questions) {\n  if (q.type === 'email' && answers[q.id]) {\n    userEmail = answers[q.id];\n    break;\n  }\n}\n\n// Process file fields - separate files from regular answers\nconst fileFields = {};\nconst regularAnswers = {};\n\nfor (const [key, value] of Object.entries(answers)) {\n  if (value && typeof value === 'object' && value.base64) {\n    // This is a file field\n    fileFields[key] = value;\n    regularAnswers[key] = `[FILE: ${value.filename}]`; // Placeholder\n  } else {\n    regularAnswers[key] = value;\n  }\n}\n\nreturn [{\n  json: {\n    submittedAt: body.submitted_at || new Date().toISOString(),\n    formId: body.form_id || '',\n    formTitle: body.form_title || '',\n    answers: JSON.stringify(regularAnswers, null, 2),\n    notifyEmails: notifyEmails,\n    slackWebhook: slackWebhook,\n    responseSheet: responseSheet,\n    userEmail: userEmail,\n    fileFields: fileFields,\n    hasFiles: Object.keys(fileFields).length > 0\n  }\n}];"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                -976,
-                304
+                -704,
+                560
             ],
-            "id": "e65dfafb-5503-4202-aef6-a3e147945445",
+            "id": "3bfad14f-2b4e-49ad-a6eb-21be814aaaf5",
             "name": "Format Form Submission"
+        },
+        {
+            "parameters": {
+                "jsCode": "const item = $input.first().json;\n\n// Parse answers JSON string\nlet answers = {};\ntry {\n  answers = JSON.parse(item.answers || '{}');\n} catch (e) {\n  answers = {};\n}\n\n// Build output object with base fields first\nconst output = {\n  'Submitted At': item.submittedAt || '',\n  'Form ID': item.formId || '',\n  'Form Title': item.formTitle || ''\n};\n\n// Spread all answer fields as separate columns\nfor (const [key, value] of Object.entries(answers)) {\n  output[key] = value || '';\n}\n\n// File Link is already included in answers if file was uploaded\n// No need to add duplicate\n\nreturn [{ json: output }];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                400,
+                400
+            ],
+            "id": "b28c8ee7-59fc-4a50-9231-b622e114b0cc",
+            "name": "Set Log Fields"
         },
         {
             "parameters": {
                 "operation": "append",
                 "documentId": {
                     "__rl": true,
-                    "value": "={{ $json.responseSheet || 'https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit#gid=61872764' }}",
+                    "value": "={{ $json.responseSheet || 'https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?gid=61872764#gid=61872764' }}",
                     "mode": "url"
                 },
                 "sheetName": {
                     "__rl": true,
-                    "value": "gid=0",
-                    "mode": "list",
-                    "cachedResultName": "Sheet1"
+                    "value": "={{ $json.responseSheet || 'https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?gid=61872764#gid=61872764' }}",
+                    "mode": "url"
                 },
                 "columns": {
                     "mappingMode": "autoMapInputData",
-                    "value": {}
+                    "value": {},
+                    "matchingColumns": [],
+                    "schema": [],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
                 },
                 "options": {}
             },
             "type": "n8n-nodes-base.googleSheets",
             "typeVersion": 4.7,
             "position": [
-                -784,
-                304
+                640,
+                400
             ],
-            "id": "add8bf81-8a86-46f7-bc36-86ff1d80640e",
+            "id": "849c92e7-4145-4c33-8e6a-7dec888ff467",
             "name": "Append to Log",
             "credentials": {
                 "googleSheetsOAuth2Api": {
@@ -210,10 +226,10 @@
             "type": "n8n-nodes-base.respondToWebhook",
             "typeVersion": 1.4,
             "position": [
-                192,
-                304
+                864,
+                720
             ],
-            "id": "6a2e0d25-cceb-47a3-8744-d7a80224c711",
+            "id": "677531e5-17ed-4740-8ad6-b8dba78374c5",
             "name": "Respond Success"
         },
         {
@@ -245,11 +261,12 @@
             "type": "n8n-nodes-base.if",
             "typeVersion": 2.2,
             "position": [
-                -576,
-                304
+                416,
+                720
             ],
-            "id": "check-slack-node",
-            "name": "Has Slack?"
+            "id": "7f2d2685-38ab-4ca2-ad80-a5f13eec67c0",
+            "name": "Has Slack?",
+            "disabled": true
         },
         {
             "parameters": {
@@ -269,11 +286,12 @@
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.2,
             "position": [
-                -384,
-                240
+                640,
+                656
             ],
-            "id": "send-slack-node",
-            "name": "Send Slack"
+            "id": "1dc951d8-dd4f-45ca-a963-a7490e58643d",
+            "name": "Send Slack",
+            "disabled": true
         },
         {
             "parameters": {
@@ -304,10 +322,10 @@
             "type": "n8n-nodes-base.if",
             "typeVersion": 2.2,
             "position": [
-                -192,
-                304
+                -480,
+                720
             ],
-            "id": "check-admin-email-node",
+            "id": "157aee16-29aa-4b44-849c-0cd6ab8e8bb6",
             "name": "Has Admin Email?"
         },
         {
@@ -320,15 +338,16 @@
             "type": "n8n-nodes-base.gmail",
             "typeVersion": 2.1,
             "position": [
-                0,
-                240
+                -256,
+                656
             ],
-            "id": "send-admin-email-node",
+            "id": "dea28c8d-8592-4a02-b365-8c513683f2ba",
             "name": "Send Admin Email",
+            "webhookId": "efb22689-dad0-497f-a7c6-d38d81379bee",
             "credentials": {
                 "gmailOAuth2": {
-                    "id": "YOUR_GMAIL_CREDENTIAL_ID",
-                    "name": "Gmail account"
+                    "id": "i6xmL5GuY8gyrXK0",
+                    "name": "Gmail Account - POOH"
                 }
             }
         },
@@ -344,7 +363,7 @@
                     "conditions": [
                         {
                             "id": "user-email-check",
-                            "leftValue": "={{ $json.userEmail }}",
+                            "leftValue": "={{ $('Format Form Submission').item.json.userEmail }}",
                             "rightValue": "",
                             "operator": {
                                 "type": "string",
@@ -361,33 +380,129 @@
             "type": "n8n-nodes-base.if",
             "typeVersion": 2.2,
             "position": [
-                0,
-                368
+                -32,
+                720
             ],
-            "id": "check-user-email-node",
+            "id": "1f0aec4c-09fd-43f3-b0ab-d31644b82352",
             "name": "Has User Email?"
         },
         {
             "parameters": {
-                "sendTo": "={{ $json.userEmail }}",
-                "subject": "=ขอบคุณที่กรอกแบบฟอร์ม: {{ $json.formTitle }}",
-                "message": "=สวัสดีครับ/ค่ะ\\n\\nขอบคุณที่กรอกแบบฟอร์ม \"{{ $json.formTitle }}\"\\nเราได้รับข้อมูลของคุณเรียบร้อยแล้ว\\n\\nวันที่ส่ง: {{ $json.submittedAt }}\\n\\nขอบคุณครับ/ค่ะ\\nPiR Academy",
+                "sendTo": "={{ $('Format Form Submission').item.json.userEmail }}",
+                "subject": "=ขอบคุณที่กรอกแบบฟอร์ม: {{ $('Format Form Submission').item.json.formTitle }}",
+                "message": "=สวัสดีครับ/ค่ะ\n\nขอบคุณที่กรอกแบบฟอร์ม \"{{ $('Format Form Submission').item.json.formTitle }}\"\n\nเราได้รับข้อมูลของคุณเรียบร้อยแล้ว\n\n📅 วันที่ส่ง: {{ $('Format Form Submission').item.json.submittedAt }}\n📋 Form ID: {{ $('Format Form Submission').item.json.formId }}\n\nขอบคุณครับ/ค่ะ\nPiR Academy",
                 "options": {}
             },
             "type": "n8n-nodes-base.gmail",
             "typeVersion": 2.1,
             "position": [
                 192,
-                432
+                656
             ],
-            "id": "send-user-email-node",
+            "id": "5b283c60-58e7-48dd-8458-26362cd7e5bb",
             "name": "Send User Email",
+            "webhookId": "afcc3490-a712-41dc-8bba-e0904a686171",
             "credentials": {
                 "gmailOAuth2": {
-                    "id": "YOUR_GMAIL_CREDENTIAL_ID",
-                    "name": "Gmail account"
+                    "id": "i6xmL5GuY8gyrXK0",
+                    "name": "Gmail Account - POOH"
                 }
             }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "loose",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "has-files-check",
+                            "leftValue": "={{ $json.hasFiles }}",
+                            "rightValue": true,
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "equals"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "looseTypeValidation": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                -480,
+                384
+            ],
+            "id": "70ae58f4-f47b-4f55-ab45-00c64cfedac6",
+            "name": "Has Files?"
+        },
+        {
+            "parameters": {
+                "jsCode": "const item = $input.first().json;\nconst fileFields = item.fileFields || {};\nconst fieldIds = Object.keys(fileFields);\n\nif (fieldIds.length === 0) {\n  return [{ json: { ...item, fileLinks: {} } }];\n}\n\n// Process first file (for simplicity, handle one file at a time)\nconst fieldId = fieldIds[0];\nconst file = fileFields[fieldId];\n\n// Remove data URI prefix (data:mime/type;base64,)\nconst base64Clean = file.base64.split(',')[1] || file.base64;\n\nreturn [{\n  json: {\n    ...item,\n    currentFieldId: fieldId,\n    currentFilename: file.filename,\n    currentMimeType: file.mimeType\n  },\n  binary: {\n    file: {\n      data: base64Clean,\n      mimeType: file.mimeType,\n      fileName: file.filename\n    }\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -256,
+                320
+            ],
+            "id": "6b9dd2cd-0295-48cb-b3b4-873d65a91943",
+            "name": "Extract File Data"
+        },
+        {
+            "parameters": {
+                "inputDataFieldName": "file",
+                "name": "={{ $json.currentFilename }}",
+                "driveId": {
+                    "__rl": true,
+                    "value": "My Drive",
+                    "mode": "list",
+                    "cachedResultName": "My Drive",
+                    "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+                },
+                "folderId": {
+                    "__rl": true,
+                    "value": "1Btv-qVE_IEsK8_oFnQGhkYTGR6ncYof5",
+                    "mode": "list",
+                    "cachedResultName": "FORM - Image",
+                    "cachedResultUrl": "https://drive.google.com/drive/folders/1Btv-qVE_IEsK8_oFnQGhkYTGR6ncYof5"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                -32,
+                320
+            ],
+            "id": "9d18f6b2-bc79-4559-9529-8908f09f4aaf",
+            "name": "Upload to Google Drive",
+            "credentials": {
+                "googleDriveOAuth2Api": {
+                    "id": "XIuJit5Z5Xpiw5Pj",
+                    "name": "Google Drive account - POOH"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const driveResponse = $input.first().json;\nconst prevData = $('Extract File Data').first().json;\n\n// Google Drive file link\nconst fileId = driveResponse.id;\nconst viewLink = `https://drive.google.com/file/d/${fileId}/view`;\n\n// Update answers to include file link\nconst answers = JSON.parse(prevData.answers || '{}');\nconst fieldId = prevData.currentFieldId;\nanswers[fieldId] = viewLink;\n\nreturn [{\n  json: {\n    submittedAt: prevData.submittedAt,\n    formId: prevData.formId,\n    formTitle: prevData.formTitle,\n    answers: JSON.stringify(answers, null, 2),\n    notifyEmails: prevData.notifyEmails,\n    slackWebhook: prevData.slackWebhook,\n    responseSheet: prevData.responseSheet,\n    userEmail: prevData.userEmail,\n    fileLink: viewLink\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                192,
+                320
+            ],
+            "id": "ebd01433-363d-42d1-bb81-fb4b3360c2a8",
+            "name": "Create Drive Link"
         }
     ],
     "connections": {
@@ -468,18 +583,23 @@
             "main": [
                 [
                     {
-                        "node": "Append to Log",
+                        "node": "Has Files?",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Has Admin Email?",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Append to Log": {
+        "Set Log Fields": {
             "main": [
                 [
                     {
-                        "node": "Has Slack?",
+                        "node": "Append to Log",
                         "type": "main",
                         "index": 0
                     }
@@ -497,7 +617,7 @@
                 ],
                 [
                     {
-                        "node": "Has Admin Email?",
+                        "node": "Respond Success",
                         "type": "main",
                         "index": 0
                     }
@@ -508,7 +628,7 @@
             "main": [
                 [
                     {
-                        "node": "Has Admin Email?",
+                        "node": "Respond Success",
                         "type": "main",
                         "index": 0
                     }
@@ -555,7 +675,7 @@
                 ],
                 [
                     {
-                        "node": "Respond Success",
+                        "node": "Has Slack?",
                         "type": "main",
                         "index": 0
                     }
@@ -566,7 +686,58 @@
             "main": [
                 [
                     {
-                        "node": "Respond Success",
+                        "node": "Has Slack?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Files?": {
+            "main": [
+                [
+                    {
+                        "node": "Extract File Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Set Log Fields",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract File Data": {
+            "main": [
+                [
+                    {
+                        "node": "Upload to Google Drive",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Upload to Google Drive": {
+            "main": [
+                [
+                    {
+                        "node": "Create Drive Link",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create Drive Link": {
+            "main": [
+                [
+                    {
+                        "node": "Set Log Fields",
                         "type": "main",
                         "index": 0
                     }
@@ -576,6 +747,7 @@
     },
     "pinData": {},
     "meta": {
+        "templateCredsSetupCompleted": true,
         "instanceId": "c4a432d8839f73c04d1c52b619739b20deb63b823fc0c91805299f612d5b8100"
     }
 }

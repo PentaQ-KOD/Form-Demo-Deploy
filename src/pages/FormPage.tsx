@@ -16,6 +16,7 @@ interface Question {
     required?: boolean;
     placeholder?: string;
     options?: string[];
+    choices?: string[]; // Alternative to options (for compatibility)
     multiple?: boolean;
     multiline?: boolean;
     maxRating?: number;
@@ -107,17 +108,89 @@ export default function FormPage() {
         fetchFormConfig();
     }, [formId]);
 
-    // Handle input change
+    // Handle input change with real-time validation
     const handleChange = (questionId: string, value: string | string[] | number | File | null) => {
         setFormData((prev) => ({ ...prev, [questionId]: value }));
-        // Clear validation error when user starts typing
-        if (validationErrors[questionId]) {
-            setValidationErrors((prev) => {
-                const newErrors = { ...prev };
-                delete newErrors[questionId];
-                return newErrors;
-            });
+
+        // Real-time validation for email and phone
+        if (formConfig) {
+            const question = formConfig.questions.find(q => q.id === questionId);
+            if (question && (question.type === "email" || question.type === "phone")) {
+                // Only validate if there's a value (don't show error for empty fields while typing)
+                if (value && typeof value === "string" && value.length > 0) {
+                    const error = validateQuestionValue(question, value);
+                    if (error) {
+                        setValidationErrors((prev) => ({ ...prev, [questionId]: error }));
+                    } else {
+                        // Clear error if valid
+                        setValidationErrors((prev) => {
+                            const newErrors = { ...prev };
+                            delete newErrors[questionId];
+                            return newErrors;
+                        });
+                    }
+                } else {
+                    // Clear error when field is empty (required check happens on submit)
+                    setValidationErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors[questionId];
+                        return newErrors;
+                    });
+                }
+            } else {
+                // Clear validation error for other types when user starts typing
+                if (validationErrors[questionId]) {
+                    setValidationErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors[questionId];
+                        return newErrors;
+                    });
+                }
+            }
         }
+    };
+
+    // Validate only format (email/phone) without required check - for real-time validation
+    const validateQuestionValue = (question: Question, value: string): string | null => {
+        // Email validation
+        if (question.type === "email") {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                return "รูปแบบอีเมลไม่ถูกต้อง";
+            }
+        }
+
+        // Phone validation (Thai format)
+        if (question.type === "phone") {
+            const digitsOnly = value.replace(/\D/g, "");
+
+            // Check if input contains mostly non-digit characters (invalid)
+            if (digitsOnly.length === 0 && value.length > 0) {
+                return "กรุณากรอกเฉพาะตัวเลข";
+            }
+
+            // Check max 10 digits
+            if (digitsOnly.length > 10) {
+                return "เบอร์โทรต้องไม่เกิน 10 หลัก";
+            }
+
+            // Check if starts with 0 (Thai phone numbers must start with 0)
+            if (digitsOnly.length > 0 && !digitsOnly.startsWith("0")) {
+                return "เบอร์โทรต้องเริ่มต้นด้วย 0";
+            }
+
+            // Validate format when user has entered enough digits
+            if (digitsOnly.length >= 9) {
+                const thaiMobileRegex = /^0[689]\d{8}$/;
+                const thaiLandlineRegex = /^0[2-7]\d{7}$/;
+
+                if (!thaiMobileRegex.test(digitsOnly) && !thaiLandlineRegex.test(digitsOnly)) {
+                    return "รูปแบบเบอร์โทรไม่ถูกต้อง (เช่น 08x-xxx-xxxx หรือ 02-xxx-xxxx)";
+                }
+            }
+        }
+
+        return null;
     };
 
     // Validate single question
@@ -152,11 +225,25 @@ export default function FormPage() {
             }
         }
 
-        // Phone validation
+        // Phone validation (Thai format)
         if (question.type === "phone" && value && typeof value === "string") {
-            const phoneRegex = /^[0-9\-\+\s\(\)]{8,}$/;
-            if (!phoneRegex.test(value)) {
-                return "รูปแบบเบอร์โทรไม่ถูกต้อง";
+            // Remove all non-digit characters for validation
+            const digitsOnly = value.replace(/\D/g, "");
+
+            // Check max 10 digits
+            if (digitsOnly.length > 10) {
+                return "เบอร์โทรต้องไม่เกิน 10 หลัก";
+            }
+
+            // Thai phone formats:
+            // - Mobile: 06x, 08x, 09x (10 digits)
+            // - Landline Bangkok: 02xxxxxxx (9 digits)
+            // - Landline Other: 0xxyyyyyyy (9 digits, xx = 32-77)
+            const thaiMobileRegex = /^0[689]\d{8}$/;
+            const thaiLandlineRegex = /^0[2-7]\d{7}$/;
+
+            if (!thaiMobileRegex.test(digitsOnly) && !thaiLandlineRegex.test(digitsOnly)) {
+                return "รูปแบบเบอร์โทรไม่ถูกต้อง (เช่น 08x-xxx-xxxx หรือ 02-xxx-xxxx)";
             }
         }
 
@@ -190,6 +277,16 @@ export default function FormPage() {
         return Object.keys(errors).length === 0;
     };
 
+    // Helper function to convert File to Base64
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+        });
+    };
+
     // Submit form
     const handleSubmit = async () => {
         if (!formConfig) return;
@@ -197,15 +294,21 @@ export default function FormPage() {
         setFormState("submitting");
 
         try {
-            // Prepare answers (convert Files to names for now)
+            // Prepare answers (convert Files to Base64 with metadata)
             const answers: Record<string, unknown> = {};
-            Object.entries(formData).forEach(([key, value]) => {
+            for (const [key, value] of Object.entries(formData)) {
                 if (value instanceof File) {
-                    answers[key] = value.name;
+                    const base64 = await fileToBase64(value);
+                    answers[key] = {
+                        filename: value.name,
+                        mimeType: value.type,
+                        size: value.size,
+                        base64: base64
+                    };
                 } else {
                     answers[key] = value;
                 }
-            });
+            }
 
             const payload = {
                 form_id: formId,
@@ -244,7 +347,7 @@ export default function FormPage() {
             case "choices":
                 return (
                     <ChoiceField
-                        options={question.options || []}
+                        options={question.choices || question.options || []}
                         value={value as string | string[]}
                         onChange={(v) => handleChange(question.id, v)}
                         multiple={question.multiple}
@@ -264,7 +367,7 @@ export default function FormPage() {
                         )}
                     >
                         <option value="">{question.placeholder || "กรุณาเลือก..."}</option>
-                        {(question.options || []).map((opt) => (
+                        {(question.choices || question.options || []).map((opt) => (
                             <option key={opt} value={opt}>
                                 {opt}
                             </option>
