@@ -108,6 +108,16 @@ export default function FormPage() {
         fetchFormConfig();
     }, [formId]);
 
+    // Update document title when form config is loaded
+    useEffect(() => {
+        if (formConfig?.title) {
+            document.title = formConfig.title;
+        }
+        return () => {
+            document.title = "PiR Form"; // Reset on unmount
+        };
+    }, [formConfig?.title]);
+
     // Handle input change with real-time validation
     const handleChange = (questionId: string, value: string | string[] | number | File | null) => {
         setFormData((prev) => ({ ...prev, [questionId]: value }));
