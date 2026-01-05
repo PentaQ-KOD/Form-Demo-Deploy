@@ -365,24 +365,69 @@ export default function FormPage() {
                 );
 
             case "dropdown":
+                const dropdownOptions = question.choices || question.options || [];
+                const otherVariants = ["อื่นๆ", "อื่น ๆ", "อื่นๆ (โปรดระบุ)", "อื่น ๆ (โปรดระบุ)", "other", "Other", "Others", "อื่น"];
+                const otherOption = dropdownOptions.find(opt =>
+                    otherVariants.some(other => opt.toLowerCase().includes(other.toLowerCase()))
+                );
+
+                // Check if current value is "other" with custom text
+                const isOtherSelected = otherOption && typeof value === "string" &&
+                    (value === otherOption || value.startsWith(otherOption + ":"));
+                const otherTextValue = isOtherSelected && typeof value === "string" && value.includes(":")
+                    ? value.substring(value.indexOf(":") + 1).trim()
+                    : "";
+
                 return (
-                    <select
-                        value={typeof value === "string" ? value : ""}
-                        onChange={(e) => handleChange(question.id, e.target.value)}
-                        className={cn(
-                            "pir-form-input w-full h-12 md:h-14 px-4 rounded-lg border-2",
-                            "font-bai text-base md:text-lg bg-background",
-                            "focus:outline-none focus:ring-2 focus:ring-ring",
-                            error ? "border-destructive" : "border-border"
+                    <div className="space-y-2">
+                        <select
+                            value={isOtherSelected ? otherOption : (typeof value === "string" ? value : "")}
+                            onChange={(e) => {
+                                const selectedValue = e.target.value;
+                                if (otherOption && selectedValue === otherOption) {
+                                    handleChange(question.id, otherOption);
+                                } else {
+                                    handleChange(question.id, selectedValue);
+                                }
+                            }}
+                            className={cn(
+                                "pir-form-input w-full h-12 md:h-14 px-4 rounded-lg border-2",
+                                "font-bai text-base md:text-lg bg-background",
+                                "focus:outline-none focus:ring-2 focus:ring-ring",
+                                error ? "border-destructive" : "border-border"
+                            )}
+                        >
+                            <option value="">{question.placeholder || "กรุณาเลือก..."}</option>
+                            {dropdownOptions.map((opt) => (
+                                <option key={opt} value={opt}>
+                                    {opt}
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* Show text input when "other" is selected */}
+                        {isOtherSelected && (
+                            <input
+                                type="text"
+                                value={otherTextValue}
+                                onChange={(e) => {
+                                    const text = e.target.value;
+                                    if (text.trim()) {
+                                        handleChange(question.id, `${otherOption}: ${text}`);
+                                    } else {
+                                        handleChange(question.id, otherOption || "");
+                                    }
+                                }}
+                                placeholder="โปรดระบุ..."
+                                className={cn(
+                                    "pir-form-input w-full h-12 md:h-14 px-4 rounded-lg border-2",
+                                    "font-bai text-base md:text-lg bg-background",
+                                    "focus:outline-none focus:ring-2 focus:ring-ring",
+                                    "border-border"
+                                )}
+                            />
                         )}
-                    >
-                        <option value="">{question.placeholder || "กรุณาเลือก..."}</option>
-                        {(question.choices || question.options || []).map((opt) => (
-                            <option key={opt} value={opt}>
-                                {opt}
-                            </option>
-                        ))}
-                    </select>
+                    </div>
                 );
 
             case "rating":
@@ -685,16 +730,11 @@ export default function FormPage() {
                             )}
                         >
                             <div className="mb-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full font-bai">
-                                        {index + 1} / {formConfig.questions.length}
-                                    </span>
-                                    {question.required && (
-                                        <span className="text-xs text-destructive font-bai">จำเป็น</span>
-                                    )}
-                                </div>
                                 <h2 className="pir-form-label text-lg md:text-xl font-medium font-bai text-foreground">
                                     {question.label}
+                                    {question.required && (
+                                        <span className="text-xs text-destructive font-bai ml-2">จำเป็น</span>
+                                    )}
                                 </h2>
                                 {question.description && (
                                     <p className="pir-form-description text-sm text-muted-foreground font-bai mt-1">

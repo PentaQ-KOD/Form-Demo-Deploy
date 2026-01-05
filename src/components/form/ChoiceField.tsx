@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface ChoiceFieldProps {
     options: string[];
@@ -8,6 +9,9 @@ interface ChoiceFieldProps {
     multiple?: boolean;
     disabled?: boolean;
 }
+
+// Common "other" option variations in Thai
+const OTHER_OPTIONS = ["อื่นๆ", "อื่น ๆ", "อื่นๆ (โปรดระบุ)", "อื่น ๆ (โปรดระบุ)", "other", "Other", "Others", "อื่น"];
 
 export const ChoiceField = ({
     options,
@@ -18,58 +22,156 @@ export const ChoiceField = ({
 }: ChoiceFieldProps) => {
     const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
 
+    // Find if any option is an "other" option
+    const otherOption = options.find(opt => OTHER_OPTIONS.some(other => opt.toLowerCase().includes(other.toLowerCase())));
+
+    // Check if "other" is selected and extract the custom text
+    const getOtherText = () => {
+        if (!otherOption) return "";
+        const otherValue = selectedValues.find(v => v.startsWith(otherOption + ":"));
+        if (otherValue) {
+            return otherValue.substring(otherOption.length + 1).trim();
+        }
+        return "";
+    };
+
+    const [otherText, setOtherText] = useState(getOtherText());
+
+    // Check if "other" option is selected (either exact match or with custom text)
+    const isOtherSelected = otherOption && selectedValues.some(v =>
+        v === otherOption || v.startsWith(otherOption + ":")
+    );
+
+    // Update otherText when value changes externally
+    useEffect(() => {
+        setOtherText(getOtherText());
+    }, [value]);
+
     const handleClick = (option: string) => {
         if (disabled) return;
 
+        const isOther = otherOption && option === otherOption;
+
         if (multiple) {
-            const newValues = selectedValues.includes(option)
-                ? selectedValues.filter((v) => v !== option)
-                : [...selectedValues, option];
-            onChange(newValues);
+            if (isOther) {
+                // For "other" option in multiple mode
+                const hasOther = selectedValues.some(v => v === otherOption || v.startsWith(otherOption + ":"));
+                if (hasOther) {
+                    // Remove all "other" variants
+                    const newValues = selectedValues.filter(v => v !== otherOption && !v.startsWith(otherOption + ":"));
+                    onChange(newValues);
+                    setOtherText("");
+                } else {
+                    // Add "other" option
+                    onChange([...selectedValues, otherOption]);
+                }
+            } else {
+                const newValues = selectedValues.includes(option)
+                    ? selectedValues.filter((v) => v !== option)
+                    : [...selectedValues, option];
+                onChange(newValues);
+            }
         } else {
-            onChange(option);
+            if (isOther) {
+                // For "other" option in single mode
+                if (isOtherSelected) {
+                    onChange("");
+                    setOtherText("");
+                } else {
+                    onChange(otherOption);
+                }
+            } else {
+                onChange(option);
+                setOtherText("");
+            }
+        }
+    };
+
+    const handleOtherTextChange = (text: string) => {
+        setOtherText(text);
+
+        if (!otherOption) return;
+
+        if (multiple) {
+            // Remove old "other" values and add new one
+            const filteredValues = selectedValues.filter(v => v !== otherOption && !v.startsWith(otherOption + ":"));
+            if (text.trim()) {
+                onChange([...filteredValues, `${otherOption}: ${text.trim()}`]);
+            } else {
+                onChange([...filteredValues, otherOption]);
+            }
+        } else {
+            if (text.trim()) {
+                onChange(`${otherOption}: ${text.trim()}`);
+            } else {
+                onChange(otherOption);
+            }
         }
     };
 
     return (
         <div className="space-y-2">
             {options.map((option) => {
-                const isSelected = selectedValues.includes(option);
+                const isOther = otherOption && option === otherOption;
+                const isSelected = isOther
+                    ? isOtherSelected
+                    : selectedValues.includes(option);
 
                 return (
-                    <button
-                        key={option}
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => handleClick(option)}
-                        className={cn(
-                            "pir-form-choice w-full text-left px-4 py-3 rounded-lg border-2 transition-all duration-200",
-                            "flex items-center gap-3 font-bai text-base md:text-lg",
-                            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            isSelected
-                                ? "border-primary bg-primary/10 text-foreground"
-                                : "border-border bg-card hover:border-primary/50 hover:bg-muted/50",
-                            disabled && "opacity-50 cursor-not-allowed"
-                        )}
-                    >
-                        {/* Selection indicator */}
-                        <div
+                    <div key={option}>
+                        <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => handleClick(option)}
                             className={cn(
-                                "flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
-                                multiple ? "rounded" : "rounded-full",
+                                "pir-form-choice w-full text-left px-4 py-3 rounded-lg border-2 transition-all duration-200",
+                                "flex items-center gap-3 font-bai text-base md:text-lg",
+                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                 isSelected
-                                    ? "border-primary bg-primary"
-                                    : "border-muted-foreground/30"
+                                    ? "border-primary bg-primary/10 text-foreground"
+                                    : "border-border bg-card hover:border-primary/50 hover:bg-muted/50",
+                                disabled && "opacity-50 cursor-not-allowed"
                             )}
                         >
-                            {isSelected && (
-                                <Check className="h-3 w-3 text-primary-foreground" />
-                            )}
-                        </div>
+                            {/* Selection indicator */}
+                            <div
+                                className={cn(
+                                    "flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+                                    multiple ? "rounded" : "rounded-full",
+                                    isSelected
+                                        ? "border-primary bg-primary"
+                                        : "border-muted-foreground/30"
+                                )}
+                            >
+                                {isSelected && (
+                                    <Check className="h-3 w-3 text-primary-foreground" />
+                                )}
+                            </div>
 
-                        {/* Option text */}
-                        <span className="flex-1">{option}</span>
-                    </button>
+                            {/* Option text */}
+                            <span className="flex-1">{option}</span>
+                        </button>
+
+                        {/* Other text input - show when "other" is selected */}
+                        {isOther && isSelected && (
+                            <div className="mt-2 ml-8">
+                                <input
+                                    type="text"
+                                    value={otherText}
+                                    onChange={(e) => handleOtherTextChange(e.target.value)}
+                                    placeholder="โปรดระบุ..."
+                                    disabled={disabled}
+                                    className={cn(
+                                        "w-full px-4 py-2 rounded-lg border-2 border-border",
+                                        "font-bai text-base bg-background",
+                                        "focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary",
+                                        disabled && "opacity-50 cursor-not-allowed"
+                                    )}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            </div>
+                        )}
+                    </div>
                 );
             })}
         </div>
