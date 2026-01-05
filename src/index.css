@@ -28,41 +28,44 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 20% 92%;
-    --foreground: 220 10% 20%;
+    --background: 220 20% 96%;
+    --foreground: 220 15% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 10% 20%;
+    --card-foreground: 220 15% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 20%;
+    --popover-foreground: 220 15% 20%;
 
-    --primary: 220 15% 45%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 10% 96%;
-    --secondary-foreground: 220 10% 20%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 15% 20%;
 
-    --muted: 220 10% 96%;
-    --muted-foreground: 220 8% 50%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 220 10% 96%;
-    --accent-foreground: 220 10% 20%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 10% 88%;
-    --input: 220 10% 88%;
-    --ring: 220 15% 45%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262 83% 58%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
     --quiz-option: 30 10% 95%;
     --quiz-option-hover: 30 10% 92%;
-    --quiz-progress-complete: 215 17% 59%;
-    --quiz-progress-remaining: 203 41% 66%;
-    --quiz-indicator: 6 65% 66%;
+    --quiz-progress-complete: 262 83% 58%;
+    --quiz-progress-remaining: 220 13% 91%;
+    --quiz-indicator: 262 83% 58%;
     --quiz-number: 220 10% 75%;
     --quiz-nav-button: 0 0% 37%;
     --quiz-submit-button: 210 17% 98%;
@@ -84,7 +87,7 @@ All colors MUST be HSL.
 
     --sidebar-border: 220 13% 91%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 262 83% 58%;
   }
 
   .dark {

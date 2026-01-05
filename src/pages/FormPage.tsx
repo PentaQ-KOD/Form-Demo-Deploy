@@ -639,25 +639,62 @@ export default function FormPage() {
 
         return (
             <div className="pir-form-container">
-                <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 text-center">
-                    <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <div className="flex items-center justify-center min-h-screen py-8 px-4">
+                    <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 text-center space-y-6">
+                        {/* Success Icon */}
+                        <div className="flex justify-center">
+                            <div className="relative">
+                                {/* Decorative wave/hand illustration style */}
+                                <svg
+                                    className="w-20 h-20 text-primary"
+                                    viewBox="0 0 80 80"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M40 10c-2 0-4 1-5 3l-10 25c-1 2 0 4 2 5s4 0 5-2l5-12v35c0 3 2 5 5 5s5-2 5-5V29l5 12c1 2 3 3 5 2s3-3 2-5L49 13c-1-2-3-3-5-3h-4z"
+                                        stroke="currentColor"
+                                        strokeWidth="3"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        fill="none"
+                                    />
+                                    <circle cx="25" cy="20" r="3" fill="#facc15" />
+                                    <circle cx="55" cy="25" r="2" fill="#a855f7" />
+                                    <circle cx="60" cy="50" r="4" fill="#facc15" />
+                                    <circle cx="20" cy="55" r="2" fill="#a855f7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Success Message */}
+                        <div className="space-y-2">
+                            <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground">
+                                ส่งข้อมูลเรียบร้อยแล้ว!
+                            </h2>
+                            <p className="text-muted-foreground font-bai">
+                                เราได้รับข้อมูลของคุณแล้ว และจะติดต่อกลับโดยเร็วที่สุด
+                            </p>
+                        </div>
+
+                        {/* Decorative divider */}
+                        <div className="flex items-center justify-center gap-2 py-2">
+                            <div className="h-1 w-1 rounded-full bg-primary/30" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-primary/50" />
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-primary/50" />
+                            <div className="h-1 w-1 rounded-full bg-primary/30" />
+                        </div>
+
+                        {/* Action Button */}
+                        <Button
+                            onClick={() => navigate("/")}
+                            variant="outline"
+                            className="font-bai px-6 py-2 rounded-full border-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+                        >
+                            กลับหน้าหลัก
+                        </Button>
                     </div>
-                    <div className="space-y-2">
-                        <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground">
-                            ขอบคุณครับ!
-                        </h2>
-                        <p className="text-muted-foreground font-bai">
-                            เราได้รับข้อมูลของคุณเรียบร้อยแล้ว
-                        </p>
-                    </div>
-                    <Button
-                        onClick={() => navigate("/")}
-                        variant="outline"
-                        className="font-bai"
-                    >
-                        กลับหน้าหลัก
-                    </Button>
                 </div>
             </div>
         );
@@ -691,84 +728,87 @@ export default function FormPage() {
     };
 
     return (
-        <div className="pir-form-container">
-            <div className="max-w-2xl mx-auto py-6 px-4">
-                {/* Header */}
-                <div className="mb-8">
-                    {/* Logo */}
-                    {formConfig.logoUrl && (
-                        <div className="flex justify-center mb-6">
-                            <img
-                                src={formConfig.logoUrl}
-                                alt="Logo"
-                                className="h-12 md:h-16 object-contain"
-                            />
-                        </div>
-                    )}
-                    <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground">
-                        {formConfig.title}
-                    </h1>
-                    {formConfig.description && (
-                        <p className="text-muted-foreground font-bai mt-2">
-                            {formConfig.description}
-                        </p>
-                    )}
-                </div>
+        <div className="pir-form-container min-h-screen py-8 px-4">
+            <div className="max-w-2xl mx-auto">
+                {/* Main Card Container */}
+                <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="p-6 md:p-8 border-b border-border/50">
+                        {/* Logo */}
+                        {formConfig.logoUrl && (
+                            <div className="flex justify-center mb-6">
+                                <img
+                                    src={formConfig.logoUrl}
+                                    alt="Logo"
+                                    className="h-10 md:h-12 object-contain"
+                                />
+                            </div>
+                        )}
+                        <h1 className="text-xl md:text-2xl font-bold font-bai text-foreground text-center">
+                            {formConfig.title}
+                        </h1>
+                        {formConfig.description && (
+                            <p className="text-muted-foreground font-bai mt-2 text-center text-sm md:text-base">
+                                {formConfig.description}
+                            </p>
+                        )}
+                    </div>
 
-                {/* Form */}
-                <form onSubmit={onFormSubmit} className="space-y-8">
-                    {/* All Questions */}
-                    {formConfig.questions.map((question, index) => (
-                        <div
-                            key={question.id}
-                            id={`question-${question.id}`}
-                            className={cn(
-                                "pir-form-question p-6 rounded-xl border-2 transition-colors",
-                                validationErrors[question.id]
-                                    ? "border-destructive/50 bg-destructive/5"
-                                    : "border-border bg-card"
-                            )}
-                        >
-                            <div className="mb-4">
-                                <h2 className="pir-form-label text-lg md:text-xl font-medium font-bai text-foreground">
-                                    {question.label}
-                                    {question.required && (
-                                        <span className="text-xs text-destructive font-bai ml-2">จำเป็น</span>
+                    {/* Form */}
+                    <form onSubmit={onFormSubmit} className="p-6 md:p-8 space-y-6">
+                        {/* All Questions */}
+                        {formConfig.questions.map((question, index) => (
+                            <div
+                                key={question.id}
+                                id={`question-${question.id}`}
+                                className={cn(
+                                    "p-4 md:p-5 rounded-xl border transition-all duration-200",
+                                    validationErrors[question.id]
+                                        ? "border-destructive/50 bg-destructive/5"
+                                        : "border-border/50 bg-muted/20 hover:bg-muted/30"
+                                )}
+                            >
+                                <div className="mb-3">
+                                    <h2 className="text-base md:text-lg font-medium font-bai text-foreground flex items-center gap-2">
+                                        {question.label}
+                                        {question.required && (
+                                            <span className="text-xs text-destructive font-normal">*</span>
+                                        )}
+                                    </h2>
+                                    {question.description && (
+                                        <p className="text-sm text-muted-foreground font-bai mt-1">
+                                            {question.description}
+                                        </p>
                                     )}
-                                </h2>
-                                {question.description && (
-                                    <p className="pir-form-description text-sm text-muted-foreground font-bai mt-1">
-                                        {question.description}
+                                </div>
+
+                                {renderQuestionInput(question)}
+
+                                {validationErrors[question.id] && (
+                                    <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1">
+                                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                        {validationErrors[question.id]}
                                     </p>
                                 )}
                             </div>
+                        ))}
 
-                            {renderQuestionInput(question)}
-
-                            {validationErrors[question.id] && (
-                                <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1">
-                                    <AlertCircle className="h-4 w-4" />
-                                    {validationErrors[question.id]}
-                                </p>
-                            )}
+                        {/* Submit Button */}
+                        <div className="pt-4">
+                            <Button
+                                type="submit"
+                                size="lg"
+                                className="w-full h-12 md:h-14 text-base md:text-lg font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                            >
+                                <Check className="h-5 w-5 mr-2" />
+                                ส่งคำตอบ
+                            </Button>
+                            <p className="text-center text-xs text-muted-foreground font-bai mt-3">
+                                กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนกดส่ง
+                            </p>
                         </div>
-                    ))}
-
-                    {/* Submit Button */}
-                    <div className="pt-4">
-                        <Button
-                            type="submit"
-                            size="lg"
-                            className="w-full h-14 text-lg font-bai rounded-xl"
-                        >
-                            <Check className="h-5 w-5 mr-2" />
-                            ส่งคำตอบ
-                        </Button>
-                        <p className="text-center text-sm text-muted-foreground font-bai mt-3">
-                            กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนกดส่ง
-                        </p>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     );
