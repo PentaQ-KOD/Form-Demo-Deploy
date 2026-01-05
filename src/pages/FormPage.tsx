@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, AlertCircle, Check, Upload, X } from "lucide-react";
+import { RefreshCw, AlertCircle, Check, Upload, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { StarRating, ChoiceField } from "@/components/form";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -33,6 +33,8 @@ interface FormConfig {
     notifyEmails?: string;
     slackWebhook?: string;
     responseSheet?: string;
+    formMode?: 'single' | 'quiz';
+    driveUrl?: string;  // Google Drive folder URL for file uploads
 }
 
 type FormState = "loading" | "error" | "form" | "submitting" | "thankyou";
@@ -49,6 +51,7 @@ export default function FormPage() {
     const [formData, setFormData] = useState<Record<string, string | string[] | number | File | null>>({});
     const [errorMessage, setErrorMessage] = useState("");
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
     // Fetch form configuration
     const fetchFormConfig = async () => {
@@ -81,7 +84,17 @@ export default function FormPage() {
                 throw new Error("Invalid form configuration");
             }
 
-            setFormConfig(data);
+            // Normalize formMode from n8n (handles "form mode" key and case-insensitive values)
+            const rawFormMode = data.formMode || data['form mode'] || '';
+            const normalizedFormMode = rawFormMode.toLowerCase() === 'quiz' ? 'quiz' : 'single';
+
+            console.log('[FormPage] Raw form mode:', rawFormMode, '| Normalized:', normalizedFormMode);
+            console.log('[FormPage] Full data from n8n:', data);
+
+            setFormConfig({
+                ...data,
+                formMode: normalizedFormMode
+            });
 
             // Initialize form data
             const initialData: Record<string, string | string[] | number | File | null> = {};
@@ -287,6 +300,53 @@ export default function FormPage() {
         return Object.keys(errors).length === 0;
     };
 
+    // Validate current question only (for quiz mode)
+    const validateCurrentQuestion = (): boolean => {
+        if (!formConfig) return false;
+
+        const question = formConfig.questions[currentQuestionIndex];
+        const error = validateQuestion(question);
+
+        if (error) {
+            setValidationErrors(prev => ({ ...prev, [question.id]: error }));
+            toast.error(error);
+            return false;
+        } else {
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[question.id];
+                return newErrors;
+            });
+            return true;
+        }
+    };
+
+    // Quiz mode: Go to next question
+    const handleNextQuestion = () => {
+        if (!formConfig) return;
+
+        if (!validateCurrentQuestion()) return;
+
+        if (currentQuestionIndex < formConfig.questions.length - 1) {
+            setCurrentQuestionIndex(prev => prev + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    // Quiz mode: Go to previous question
+    const handlePrevQuestion = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(prev => prev - 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    // Quiz mode: Submit on last question
+    const handleQuizSubmit = () => {
+        if (!validateCurrentQuestion()) return;
+        handleSubmit();
+    };
+
     // Helper function to convert File to Base64
     const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -328,7 +388,16 @@ export default function FormPage() {
                 notify_emails: formConfig.notifyEmails || '', // Admin emails  
                 slack_webhook: formConfig.slackWebhook || '', // Slack webhook
                 response_sheet: formConfig.responseSheet || '', // Response sheet URL
-                submitted_at: new Date().toISOString(),
+                drive_url: formConfig.driveUrl || '', // Google Drive folder URL
+                submitted_at: new Date().toLocaleString('th-TH', {
+                    timeZone: 'Asia/Bangkok',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }),
             };
 
             const response = await fetch(SUBMIT_URL, {
@@ -752,62 +821,179 @@ export default function FormPage() {
                                 {formConfig.description}
                             </p>
                         )}
+
+                        {/* Quiz Mode Progress Indicator */}
+                        {formConfig.formMode === 'quiz' && (
+                            <div className="mt-6">
+                                {/* Progress Dots */}
+                                <div className="flex justify-center items-center gap-2">
+                                    {formConfig.questions.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            type="button"
+                                            onClick={() => {
+                                                // Allow going to previous questions without validation
+                                                if (index < currentQuestionIndex) {
+                                                    setCurrentQuestionIndex(index);
+                                                }
+                                            }}
+                                            className={cn(
+                                                "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                                                index === currentQuestionIndex
+                                                    ? "bg-primary w-8"
+                                                    : index < currentQuestionIndex
+                                                        ? "bg-primary/60 cursor-pointer hover:bg-primary/80"
+                                                        : "bg-muted-foreground/30"
+                                            )}
+                                        />
+                                    ))}
+                                </div>
+                                {/* Progress Text */}
+                                <p className="text-center text-sm text-muted-foreground font-bai mt-3">
+                                    ข้อที่ {currentQuestionIndex + 1} จาก {formConfig.questions.length}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={onFormSubmit} className="p-6 md:p-8 space-y-6">
-                        {/* All Questions */}
-                        {formConfig.questions.map((question, index) => (
-                            <div
-                                key={question.id}
-                                id={`question-${question.id}`}
-                                className={cn(
-                                    "p-4 md:p-5 rounded-xl border transition-all duration-200",
-                                    validationErrors[question.id]
-                                        ? "border-destructive/50 bg-destructive/5"
-                                        : "border-border/50 bg-muted/20 hover:bg-muted/30"
-                                )}
-                            >
-                                <div className="mb-3">
-                                    <h2 className="text-base md:text-lg font-medium font-bai text-foreground flex items-center gap-2">
-                                        {question.label}
-                                        {question.required && (
-                                            <span className="text-xs text-destructive font-normal">*</span>
+                    {/* Quiz Mode View */}
+                    {formConfig.formMode === 'quiz' ? (
+                        <div className="p-6 md:p-8">
+                            {/* Current Question */}
+                            {(() => {
+                                const question = formConfig.questions[currentQuestionIndex];
+                                return (
+                                    <div
+                                        key={question.id}
+                                        id={`question-${question.id}`}
+                                        className={cn(
+                                            "p-4 md:p-5 rounded-xl border transition-all duration-200",
+                                            validationErrors[question.id]
+                                                ? "border-destructive/50 bg-destructive/5"
+                                                : "border-border/50 bg-muted/20"
                                         )}
-                                    </h2>
-                                    {question.description && (
-                                        <p className="text-sm text-muted-foreground font-bai mt-1">
-                                            {question.description}
+                                    >
+                                        <div className="mb-4">
+                                            <h2 className="text-lg md:text-xl font-medium font-bai text-foreground flex items-center gap-2">
+                                                {question.label}
+                                                {question.required && (
+                                                    <span className="text-xs text-destructive font-normal">*</span>
+                                                )}
+                                            </h2>
+                                            {question.description && (
+                                                <p className="text-sm text-muted-foreground font-bai mt-2">
+                                                    {question.description}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {renderQuestionInput(question)}
+
+                                        {validationErrors[question.id] && (
+                                            <p className="text-sm text-destructive font-bai mt-3 flex items-center gap-1">
+                                                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                                {validationErrors[question.id]}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Navigation Buttons */}
+                            <div className="flex items-center justify-between mt-6 gap-4">
+                                {/* Previous Button */}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handlePrevQuestion}
+                                    disabled={currentQuestionIndex === 0}
+                                    className={cn(
+                                        "h-12 px-6 font-bai rounded-full transition-all",
+                                        currentQuestionIndex === 0 && "opacity-50 cursor-not-allowed"
+                                    )}
+                                >
+                                    <ChevronLeft className="h-5 w-5 mr-1" />
+                                    ย้อนกลับ
+                                </Button>
+
+                                {/* Next / Submit Button */}
+                                {currentQuestionIndex === formConfig.questions.length - 1 ? (
+                                    <Button
+                                        type="button"
+                                        onClick={handleQuizSubmit}
+                                        className="h-12 px-8 font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                                    >
+                                        <Check className="h-5 w-5 mr-2" />
+                                        ส่งคำตอบ
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        onClick={handleNextQuestion}
+                                        className="h-12 px-8 font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                                    >
+                                        ถัดไป
+                                        <ChevronRight className="h-5 w-5 ml-1" />
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        /* Single Page Mode (Default) */
+                        <form onSubmit={onFormSubmit} className="p-6 md:p-8 space-y-6">
+                            {/* All Questions */}
+                            {formConfig.questions.map((question, index) => (
+                                <div
+                                    key={question.id}
+                                    id={`question-${question.id}`}
+                                    className={cn(
+                                        "p-4 md:p-5 rounded-xl border transition-all duration-200",
+                                        validationErrors[question.id]
+                                            ? "border-destructive/50 bg-destructive/5"
+                                            : "border-border/50 bg-muted/20 hover:bg-muted/30"
+                                    )}
+                                >
+                                    <div className="mb-3">
+                                        <h2 className="text-base md:text-lg font-medium font-bai text-foreground flex items-center gap-2">
+                                            {question.label}
+                                            {question.required && (
+                                                <span className="text-xs text-destructive font-normal">*</span>
+                                            )}
+                                        </h2>
+                                        {question.description && (
+                                            <p className="text-sm text-muted-foreground font-bai mt-1">
+                                                {question.description}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {renderQuestionInput(question)}
+
+                                    {validationErrors[question.id] && (
+                                        <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1">
+                                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                            {validationErrors[question.id]}
                                         </p>
                                     )}
                                 </div>
+                            ))}
 
-                                {renderQuestionInput(question)}
-
-                                {validationErrors[question.id] && (
-                                    <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1">
-                                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                                        {validationErrors[question.id]}
-                                    </p>
-                                )}
+                            {/* Submit Button */}
+                            <div className="pt-4">
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    className="w-full h-12 md:h-14 text-base md:text-lg font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                                >
+                                    <Check className="h-5 w-5 mr-2" />
+                                    ส่งคำตอบ
+                                </Button>
+                                <p className="text-center text-xs text-muted-foreground font-bai mt-3">
+                                    กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนกดส่ง
+                                </p>
                             </div>
-                        ))}
-
-                        {/* Submit Button */}
-                        <div className="pt-4">
-                            <Button
-                                type="submit"
-                                size="lg"
-                                className="w-full h-12 md:h-14 text-base md:text-lg font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
-                            >
-                                <Check className="h-5 w-5 mr-2" />
-                                ส่งคำตอบ
-                            </Button>
-                            <p className="text-center text-xs text-muted-foreground font-bai mt-3">
-                                กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนกดส่ง
-                            </p>
-                        </div>
-                    </form>
+                        </form>
+                    )}
                 </div>
             </div>
         </div>
