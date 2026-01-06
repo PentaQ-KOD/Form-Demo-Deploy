@@ -722,15 +722,21 @@ export default function FormPage() {
                 }
             }
 
-            // If no specific name field found, try the first text question
-            const firstTextQuestion = formConfig.questions.find(q => q.type === "text");
-            if (firstTextQuestion) {
-                const name = formData[firstTextQuestion.id];
-                if (name && typeof name === "string" && name.trim()) {
-                    return name.trim();
+            // If no name field found, try to extract name from email address
+            const emailQuestion = formConfig.questions.find(q => q.type === "email");
+            if (emailQuestion) {
+                const email = formData[emailQuestion.id];
+                if (email && typeof email === "string" && email.trim()) {
+                    // Extract the part before @ and capitalize it
+                    const emailName = email.split("@")[0];
+                    // Only return if it's reasonable length (not too long, likely a name)
+                    if (emailName.length > 0 && emailName.length <= 30) {
+                        return emailName;
+                    }
                 }
             }
 
+            // Don't fallback to other text fields (they might be long feedback text)
             return "";
         };
 
