@@ -1,0 +1,77 @@
+{
+    "title": "ชื่อฟอร์ม",
+    "description": "คำอธิบายฟอร์ม",
+    "questions": [
+        {
+            "id": "example_text",
+            "type": "text",
+            "label": "ป้ายกำกับคำถาม",
+            "description": "คำอธิบายเพิ่มเติม",
+            "required": true,
+            "placeholder": "ข้อความตัวอย่าง"
+        },
+        {
+            "id": "example_email",
+            "type": "email",
+            "label": "อีเมล",
+            "description": "คำอธิบายเพิ่มเติม",
+            "required": true,
+            "placeholder": "you@example.com"
+        },
+        {
+            "id": "example_phone",
+            "type": "phone",
+            "label": "เบอร์โทรศัพท์",
+            "description": "คำอธิบายเพิ่มเติม",
+            "required": true,
+            "placeholder": "08x-xxx-xxxx"
+        },
+        {
+            "id": "example_date",
+            "type": "date",
+            "label": "วันที่",
+            "description": "คำอธิบายเพิ่มเติม",
+            "required": true
+        },
+        {
+            "id": "example_rating",
+            "type": "rating",
+            "label": "คะแนน",
+            "description": "คำอธิบายเพิ่มเติม (1-5 ดาว)",
+            "required": true
+        },
+        {
+            "id": "example_choices",
+            "type": "choices",
+            "label": "ตัวเลือก",
+            "description": "คำอธิบายเพิ่มเติม",
+            "required": true,
+            "choices": [
+                "ตัวเลือก 1",
+                "ตัวเลือก 2",
+                "ตัวเลือก 3"
+            ]
+        },
+        {
+            "id": "example_dropdown",
+            "type": "dropdown",
+            "label": "เมนูดรอปดาวน์",
+            "description": "คำอธิบายเพิ่มเติม",
+            "required": true,
+            "choices": [
+                "ตัวเลือก A",
+                "ตัวเลือก B",
+                "ตัวเลือก C"
+            ]
+        },
+        {
+            "id": "example_file",
+            "type": "file",
+            "label": "แนบไฟล์",
+            "description": "คำอธิบายเพิ่มเติม",
+            "required": false,
+            "accept": "image/*,.pdf,.doc,.docx",
+            "maxSize": 5
+        }
+    ]
+}

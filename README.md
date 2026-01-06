@@ -1,73 +1,239 @@
-# Welcome to your Lovable project
+# PiR Paperform - Dynamic Form Builder
 
-## Project info
+A dynamic, web-based form builder powered by Google Sheets and n8n webhooks. Create and manage forms without code changes.
 
-**URL**: https://lovable.dev/projects/d510ae43-2fcf-456c-9ce0-dc98dbc02780
+## 🌟 Features
 
-## How can I edit this code?
+- **Dynamic Form Loading**: Forms configured in Google Sheets, no code deployment needed
+- **Multiple Question Types**: Text, Email, Phone, Choices, Dropdown, Rating, Date, File Upload
+- **Form Modes**: Single-page or Quiz mode (one question at a time)
+- **Real-time Validation**: Email and Thai phone number validation
+- **File Uploads**: Direct upload to Google Drive with Base64 encoding
+- **Email Notifications**: Dual notifications (admin + user) with dynamic sender
+- **Slack Integration**: Post submissions to configured Slack channels
+- **Google Sheets Integration**: Automatic response logging
+- **Responsive Design**: Mobile-first with elegant desktop layouts
+- **Thai Language Support**: Full Thai localization for validation messages
 
-There are several ways of editing your application.
+## 🚀 Quick Start
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d510ae43-2fcf-456c-9ce0-dc98dbc02780) and start prompting.
+- Node.js 18+ (install with [nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
+- npm or yarn
 
-Changes made via Lovable will be committed automatically to this repo.
+### Installation
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd pir-paperform
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Copy environment variables
+cp .env.example .env
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Edit .env with your n8n webhook URLs
+# Then start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 📝 Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` file with the following:
 
-**Use GitHub Codespaces**
+```env
+# Form Page - Dynamic Form System
+VITE_FORM_FETCH_URL=https://your-n8n-domain.com/webhook/pir/form
+VITE_FORM_SUBMIT_URL=https://your-n8n-domain.com/webhook/pir/form/submit
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Index Page - AI Test/Quiz System (legacy)
+VITE_AI_TEST_URL=https://your-n8n-domain.com/webhook/pir/aitest
+VITE_SUBMIT_URL=https://your-n8n-domain.com/webhook/pir/submit
+```
 
-## What technologies are used for this project?
+## 🎯 Usage
 
-This project is built with:
+### Creating a Form
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. **Set up Google Sheets** with columns:
+   - `form id`: Unique identifier (used in URL)
+   - `form title`: Display title
+   - `form description`: Optional description
+   - `form definition`: JSON with questions array
+   - `form mode`: "single" or "quiz"
+   - `logo url`: Optional logo
+   - `success url`: Optional redirect after submission
+   - `notify emails`: Admin notification emails (comma-separated)
+   - `slack channel`: Slack channel ID
+   - `response sheet`: Google Sheets URL for responses
+   - `drive url`: Google Drive folder for file uploads
+   - `sender email`: Email sender address
+   - `sender name`: Email sender display name
 
-## How can I deploy this project?
+2. **Configure n8n workflow** to:
+   - Fetch form by `form_id` from Google Sheets
+   - Handle form submission
+   - Upload files to Google Drive
+   - Send email notifications
+   - Post to Slack
+   - Log responses to Google Sheets
 
-Simply open [Lovable](https://lovable.dev/projects/d510ae43-2fcf-456c-9ce0-dc98dbc02780) and click on Share -> Publish.
+3. **Share form URL**: `https://your-domain.com/form/{form_id}`
 
-## Can I connect a custom domain to my Lovable project?
+### Form JSON Structure
 
-Yes, you can!
+See [`FORM_SCHEMA.md`](./FORM_SCHEMA.md) for complete documentation.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+**Example:**
+```json
+{
+  "title": "Customer Feedback",
+  "description": "Help us improve our service",
+  "questions": [
+    {
+      "id": "name",
+      "type": "text",
+      "label": "Your Name",
+      "required": true
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "label": "Email Address",
+      "required": true
+    },
+    {
+      "id": "rating",
+      "type": "rating",
+      "label": "Overall Satisfaction",
+      "maxRating": 5,
+      "required": true
+    }
+  ]
+}
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🏗️ Project Structure
+
+```
+pir-paperform/
+├── src/
+│   ├── pages/
+│   │   ├── FormPage.tsx       # Dynamic form page (/form/:formId)
+│   │   ├── Index.tsx          # Quiz/Test page (legacy)
+│   │   └── NotFound.tsx       # 404 page
+│   ├── components/
+│   │   └── form/              # Form components (StarRating, ChoiceField)
+│   └── App.tsx                # Routes configuration
+├── public/                     # Static assets
+├── PRD.md                      # Product requirements
+├── FORM_SCHEMA.md              # Form JSON schema documentation
+├── Form_Config.json            # Example n8n workflow
+└── .env.example                # Environment variables template
+```
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **Routing**: React Router v6
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Notifications**: Sonner
+- **Animations**: Framer Motion
+- **Backend**: n8n (workflow automation)
+- **Database**: Google Sheets
+- **Storage**: Google Drive
+
+## 📦 Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run build:dev    # Build for development mode
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+```
+
+## 🌐 Deployment
+
+### Deploy to Lovable
+
+1. Open [Lovable Project](https://lovable.dev/projects/d510ae43-2fcf-456c-9ce0-dc98dbc02780)
+2. Click **Share → Publish**
+3. Your app will be live!
+
+### Deploy to Other Platforms
+
+**Vercel / Netlify:**
+```bash
+npm run build
+# Upload dist/ folder or connect Git repository
+```
+
+**Environment Variables**: Set the same variables from `.env` in your hosting platform's settings.
+
+## 📚 Documentation
+
+- **[PRD.md](./PRD.md)**: Complete product requirements document
+- **[FORM_SCHEMA.md](./FORM_SCHEMA.md)**: JSON schema and examples
+- **[n8n_file_upload_guide.md](./n8n_file_upload_guide.md)**: File upload workflow guide
+
+## 🔑 Key Features Explained
+
+### Dynamic Forms
+Forms are fetched from Google Sheets via n8n webhooks, allowing non-technical users to create and update forms without touching code.
+
+### Question Types
+- **Text**: Single/multi-line input
+- **Email**: With format validation
+- **Phone**: Thai phone number validation (08x, 09x, 02x)
+- **Choices**: Single/multiple selection buttons
+- **Dropdown**: Select menu with "Other" option support
+- **Rating**: Star rating (1-10)
+- **Date**: Date picker
+- **File**: Upload with type/size validation → Google Drive
+
+### Validation
+- Real-time validation for email and phone
+- Required field enforcement
+- File type and size limits
+- Thai error messages
+
+### Email System
+- **Admin Email**: Sent to `notify_emails`
+- **User Email**: Sent to email field in form (auto-detected)
+- **Dynamic Sender**: Uses `sender_email` and `sender_name` from config
+- **HTML Formatting**: Professional email templates
+
+### File Uploads
+1. User selects file
+2. Frontend converts to Base64
+3. Sends to n8n with metadata
+4. n8n decodes and uploads to Google Drive
+5. Returns shareable link
+6. Link stored in response sheet and emails
+
+## 🤝 Contributing
+
+This is a private project managed through Lovable. To contribute:
+
+1. Clone the repository
+2. Make changes in a feature branch
+3. Push to GitHub
+4. Changes sync automatically with Lovable
+
+## 📄 License
+
+Private project - All rights reserved
+
+## 🆘 Support
+
+For issues or questions, please contact the project maintainer.
+
+---
+
+**Built with ❤️ by PiR-SQUARE Co., Ltd.**
