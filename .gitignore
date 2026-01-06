@@ -27,3 +27,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Vite/Build
+vite.config.ts.timestamp-*
+*.tsbuildinfo
+
+# Local Data and Backups (Test data)
+*.csv
+n8n_p'top_flow
+n8n_file_upload_guide.md
