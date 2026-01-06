@@ -22,6 +22,7 @@ interface Question {
     maxRating?: number;
     accept?: string;
     maxSize?: number;
+    fullWidth?: boolean; // If true, question spans full width in 2-column layout
 }
 
 interface FormConfig {
@@ -465,10 +466,8 @@ export default function FormPage() {
                             }}
                             style={{ paddingTop: '12px', paddingBottom: '12px' }}
                             className={cn(
-                                "pir-form-input w-full h-12 md:h-13 px-4 rounded-lg border-2",
-                                "font-bai text-sm md:text-base bg-background",
-                                "focus:outline-none focus:ring-2 focus:ring-ring",
-                                error ? "border-destructive" : "border-border"
+                                "pir-form-input w-full font-bai",
+                                error && "ring-1 ring-destructive"
                             )}
                         >
                             <option value="">{question.placeholder || "กรุณาเลือก..."}</option>
@@ -493,12 +492,7 @@ export default function FormPage() {
                                     }
                                 }}
                                 placeholder="โปรดระบุ..."
-                                className={cn(
-                                    "pir-form-input w-full h-12 md:h-13 px-4 py-3 rounded-lg border-2",
-                                    "font-bai text-sm md:text-base bg-background",
-                                    "focus:outline-none focus:ring-2 focus:ring-ring",
-                                    "border-border"
-                                )}
+                                className="pir-form-input w-full font-bai"
                             />
                         )}
                     </div>
@@ -522,12 +516,10 @@ export default function FormPage() {
                             onChange={(e) => handleChange(question.id, e.target.value)}
                             placeholder={question.placeholder}
                             className={cn(
-                                "pir-form-input w-full min-h-[100px] rounded-lg border-2 px-4 py-3",
-                                "font-bai text-sm md:text-base resize-none leading-relaxed",
-                                "focus:outline-none focus:ring-2 focus:ring-ring",
-                                error ? "border-destructive" : "border-border"
+                                "pir-form-input w-full min-h-[80px] font-bai resize-none leading-relaxed",
+                                error && "ring-1 ring-destructive"
                             )}
-                            rows={4}
+                            rows={3}
                         />
                     );
                 }
@@ -538,8 +530,8 @@ export default function FormPage() {
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         placeholder={question.placeholder}
                         className={cn(
-                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
-                            error && "border-destructive"
+                            "pir-form-input font-bai",
+                            error && "ring-1 ring-destructive"
                         )}
                     />
                 );
@@ -552,8 +544,8 @@ export default function FormPage() {
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         placeholder={question.placeholder || "example@email.com"}
                         className={cn(
-                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
-                            error && "border-destructive"
+                            "pir-form-input font-bai",
+                            error && "ring-1 ring-destructive"
                         )}
                     />
                 );
@@ -566,8 +558,8 @@ export default function FormPage() {
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         placeholder={question.placeholder || "08x-xxx-xxxx"}
                         className={cn(
-                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
-                            error && "border-destructive"
+                            "pir-form-input font-bai",
+                            error && "ring-1 ring-destructive"
                         )}
                     />
                 );
@@ -579,8 +571,8 @@ export default function FormPage() {
                         value={typeof value === "string" ? value : ""}
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         className={cn(
-                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
-                            error && "border-destructive"
+                            "pir-form-input font-bai",
+                            error && "ring-1 ring-destructive"
                         )}
                     />
                 );
@@ -592,9 +584,9 @@ export default function FormPage() {
                         <label
                             className={cn(
                                 "flex flex-col items-center justify-center w-full h-32",
-                                "border-2 border-dashed rounded-lg cursor-pointer",
-                                "hover:bg-muted/50 transition-colors",
-                                error ? "border-destructive" : "border-border"
+                                "rounded-lg cursor-pointer bg-muted/10",
+                                "hover:bg-muted/20 transition-colors",
+                                error && "bg-destructive/10"
                             )}
                         >
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -840,7 +832,7 @@ export default function FormPage() {
                 {/* Main Card Container */}
                 <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 md:p-8 border-b border-border/50">
+                    <div className="p-6 md:p-8">
                         <h1 className="text-xl md:text-2xl font-bold font-bai text-foreground text-center">
                             {formConfig.title}
                         </h1>
@@ -895,10 +887,10 @@ export default function FormPage() {
                                         key={question.id}
                                         id={`question-${question.id}`}
                                         className={cn(
-                                            "p-4 md:p-5 rounded-xl border transition-all duration-200",
+                                            "p-4 md:p-5 transition-all duration-200",
                                             validationErrors[question.id]
-                                                ? "border-destructive/50 bg-destructive/5"
-                                                : "border-border/50 bg-muted/20"
+                                                ? "bg-destructive/5"
+                                                : ""
                                         )}
                                     >
                                         <div className="mb-4">
@@ -968,43 +960,47 @@ export default function FormPage() {
                         </div>
                     ) : (
                         /* Single Page Mode (Default) */
-                        <form onSubmit={onFormSubmit} className="p-6 md:p-8 space-y-6">
-                            {/* All Questions */}
-                            {formConfig.questions.map((question, index) => (
-                                <div
-                                    key={question.id}
-                                    id={`question-${question.id}`}
-                                    className={cn(
-                                        "p-4 md:p-5 rounded-xl border transition-all duration-200",
-                                        validationErrors[question.id]
-                                            ? "border-destructive/50 bg-destructive/5"
-                                            : "border-border/50 bg-muted/20 hover:bg-muted/30"
-                                    )}
-                                >
-                                    <div className="mb-3">
-                                        <h2 className="text-base md:text-lg font-medium font-bai text-foreground flex items-center gap-2">
+                        <form onSubmit={onFormSubmit} className="p-4 md:p-6">
+                            {/* All Questions - Compact Grid Layout */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5">
+                                {formConfig.questions.map((question, index) => (
+                                    <div
+                                        key={question.id}
+                                        id={`question-${question.id}`}
+                                        className={cn(
+                                            "space-y-1.5",
+                                            // Full width by default, only half-width if explicitly set to false
+                                            question.fullWidth === false ? "" : "md:col-span-2"
+                                        )}
+                                    >
+                                        {/* Label with inline required marker */}
+                                        <label className="pir-form-label font-bai flex items-baseline gap-1">
                                             {question.label}
                                             {question.required && (
                                                 <span className="text-xs text-destructive font-normal">(จำเป็น)</span>
                                             )}
-                                        </h2>
+                                        </label>
+
+                                        {/* Description */}
                                         {question.description && (
-                                            <p className="text-sm text-muted-foreground font-bai mt-1">
+                                            <p className="pir-form-description font-bai">
                                                 {question.description}
                                             </p>
                                         )}
+
+                                        {/* Input */}
+                                        {renderQuestionInput(question)}
+
+                                        {/* Validation Error */}
+                                        {validationErrors[question.id] && (
+                                            <p className="text-xs text-destructive font-bai mt-1 flex items-center gap-1">
+                                                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                                                {validationErrors[question.id]}
+                                            </p>
+                                        )}
                                     </div>
-
-                                    {renderQuestionInput(question)}
-
-                                    {validationErrors[question.id] && (
-                                        <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1">
-                                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                                            {validationErrors[question.id]}
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
+                                ))}
+                            </div>
 
                             {/* Submit Button */}
                             <div className="pt-4">

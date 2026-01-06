@@ -133,11 +133,11 @@ export const ChoiceField = ({
                                 disabled={disabled}
                                 onClick={() => handleClick(option)}
                                 className={cn(
-                                    "px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200",
-                                    "hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                    "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                                    "hover:bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                                     isSelected
-                                        ? "border-primary bg-primary/10 text-primary"
-                                        : "border-border bg-card text-foreground hover:border-primary/50",
+                                        ? "bg-primary/10 text-primary shadow-sm"
+                                        : "bg-muted/10 text-foreground",
                                     disabled && "opacity-50 cursor-not-allowed"
                                 )}
                             >
@@ -187,12 +187,12 @@ export const ChoiceField = ({
                                 disabled={disabled}
                                 onClick={() => handleClick(option)}
                                 className={cn(
-                                    "p-4 rounded-xl border bg-card text-left transition-all duration-200",
-                                    "hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                    "p-4 rounded-xl text-left transition-all duration-200",
+                                    "hover:bg-muted/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                                     "flex gap-4",
                                     isSelected
-                                        ? "border-primary shadow-sm"
-                                        : "border-border hover:border-primary/30",
+                                        ? "bg-primary/5 shadow-sm"
+                                        : "bg-muted/10",
                                     disabled && "opacity-50 cursor-not-allowed"
                                 )}
                             >
@@ -265,13 +265,13 @@ export const ChoiceField = ({
                             disabled={disabled}
                             onClick={() => handleClick(option)}
                             className={cn(
-                                "pir-form-choice w-full text-left px-4 py-3 rounded-xl border bg-card transition-all duration-200",
+                                "pir-form-choice w-full text-left px-4 py-3 rounded-xl transition-all duration-200",
                                 "flex items-center gap-3 font-bai text-base",
-                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                "hover:shadow-sm",
+                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+                                "hover:bg-muted/20",
                                 isSelected
-                                    ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50",
+                                    ? "bg-primary/5 shadow-sm"
+                                    : "bg-muted/10",
                                 disabled && "opacity-50 cursor-not-allowed"
                             )}
                         >

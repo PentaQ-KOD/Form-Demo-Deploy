@@ -163,41 +163,40 @@ All colors MUST be HSL.
 
 /* Question Block */
 .pir-form-question {
-  @apply p-6 bg-card/80 rounded-2xl border border-border/50;
-  @apply backdrop-blur-sm shadow-sm;
+  @apply p-6;
   @apply transition-all duration-300;
 }
 
 .pir-form-question:hover {
-  @apply shadow-md border-border;
+  /* Removed hover effect */
 }
 
 /* Labels */
 .pir-form-label {
-  @apply block text-foreground;
-  @apply leading-relaxed;
+  @apply text-sm font-medium text-foreground mb-1;
+  @apply leading-tight;
 }
 
 .pir-form-description {
-  @apply text-muted-foreground;
+  @apply text-xs text-muted-foreground mb-1;
   @apply leading-relaxed;
 }
 
 /* Input Fields */
 .pir-form-input {
-  @apply bg-background border-2 border-border;
-  @apply rounded-lg px-4 py-3;
-  @apply transition-all duration-200;
-  @apply placeholder:text-muted-foreground/50;
+  @apply h-10 px-3 py-2 text-sm;
+  @apply bg-white border border-input rounded-md;
+  @apply transition-colors duration-200;
+  @apply placeholder:text-muted-foreground/60;
 }
 
 .pir-form-input:focus {
-  @apply border-primary ring-2 ring-primary/20;
+  @apply border-primary ring-1 ring-primary/20;
   @apply outline-none;
 }
 
 .pir-form-input:hover:not(:focus) {
-  @apply border-muted-foreground/50;
+  @apply border-input/80;
 }
 
 /* Choice Fields */
@@ -224,9 +223,11 @@ All colors MUST be HSL.
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
   }
@@ -279,6 +280,7 @@ All colors MUST be HSL.
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -294,7 +296,7 @@ All colors MUST be HSL.
   .pir-form-container {
     @apply px-3;
   }
-  
+
   .pir-form-question {
     @apply p-4 rounded-xl;
   }
