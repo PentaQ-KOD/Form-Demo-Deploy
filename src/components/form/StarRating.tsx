@@ -20,14 +20,14 @@ export const StarRating = ({
     const [hoverValue, setHoverValue] = useState<number>(0);
 
     const sizeClasses = {
-        sm: "h-5 w-5",
+        sm: "h-6 w-6",
         md: "h-8 w-8",
-        lg: "h-10 w-10",
+        lg: "h-11 w-11",
     };
 
     const gapClasses = {
-        sm: "gap-1",
-        md: "gap-2",
+        sm: "gap-2",
+        md: "gap-2.5",
         lg: "gap-3",
     };
 

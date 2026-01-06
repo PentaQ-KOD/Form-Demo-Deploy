@@ -832,12 +832,12 @@ export default function FormPage() {
                 {/* Main Card Container */}
                 <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 md:p-8">
-                        <h1 className="text-xl md:text-2xl font-bold font-bai text-foreground text-center">
+                    <div className="p-6 md:p-8 border-b border-border">
+                        <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-center leading-tight">
                             {formConfig.title}
                         </h1>
                         {formConfig.description && (
-                            <p className="text-muted-foreground font-bai mt-2 text-center text-sm md:text-base">
+                            <p className="text-muted-foreground font-bai mt-3 text-center text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
                                 {formConfig.description}
                             </p>
                         )}
@@ -960,24 +960,20 @@ export default function FormPage() {
                         </div>
                     ) : (
                         /* Single Page Mode (Default) */
-                        <form onSubmit={onFormSubmit} className="p-4 md:p-6">
-                            {/* All Questions - Compact Grid Layout */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5">
+                        <form onSubmit={onFormSubmit} className="p-6 md:p-8">
+                            {/* All Questions - Single Column Layout */}
+                            <div className="space-y-6">
                                 {formConfig.questions.map((question, index) => (
                                     <div
                                         key={question.id}
                                         id={`question-${question.id}`}
-                                        className={cn(
-                                            "space-y-1.5",
-                                            // Full width by default, only half-width if explicitly set to false
-                                            question.fullWidth === false ? "" : "md:col-span-2"
-                                        )}
+                                        className="space-y-2.5"
                                     >
                                         {/* Label with inline required marker */}
-                                        <label className="pir-form-label font-bai flex items-baseline gap-1">
-                                            {question.label}
+                                        <label className="pir-form-label font-bai flex items-baseline gap-2">
+                                            <span className="text-base md:text-lg">{index + 1}. {question.label}</span>
                                             {question.required && (
-                                                <span className="text-xs text-destructive font-normal">(จำเป็น)</span>
+                                                <span className="text-sm text-destructive font-normal">(จำเป็น)</span>
                                             )}
                                         </label>
 
@@ -993,8 +989,8 @@ export default function FormPage() {
 
                                         {/* Validation Error */}
                                         {validationErrors[question.id] && (
-                                            <p className="text-xs text-destructive font-bai mt-1 flex items-center gap-1">
-                                                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                                            <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1.5">
+                                                <AlertCircle className="h-4 w-4 flex-shrink-0" />
                                                 {validationErrors[question.id]}
                                             </p>
                                         )}
@@ -1003,7 +999,7 @@ export default function FormPage() {
                             </div>
 
                             {/* Submit Button */}
-                            <div className="pt-4">
+                            <div className="pt-6 border-t border-border mt-8">
                                 <Button
                                     type="submit"
                                     size="lg"
@@ -1012,7 +1008,7 @@ export default function FormPage() {
                                     <Check className="h-5 w-5 mr-2" />
                                     ส่งคำตอบ
                                 </Button>
-                                <p className="text-center text-xs text-muted-foreground font-bai mt-3">
+                                <p className="text-center text-sm text-muted-foreground font-bai mt-3">
                                     กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนกดส่ง
                                 </p>
                             </div>

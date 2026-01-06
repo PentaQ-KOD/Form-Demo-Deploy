@@ -163,7 +163,7 @@ All colors MUST be HSL.
 
 /* Question Block */
 .pir-form-question {
-  @apply p-6;
+  @apply p-6 md:p-8;
   @apply transition-all duration-300;
 }
 
@@ -173,12 +173,12 @@ All colors MUST be HSL.
 
 /* Labels */
 .pir-form-label {
-  @apply text-sm font-medium text-foreground mb-1;
-  @apply leading-tight;
+  @apply text-base md:text-lg font-medium text-foreground mb-2;
+  @apply leading-normal;
 }
 
 .pir-form-description {
-  @apply text-xs text-muted-foreground mb-1;
+  @apply text-sm md:text-base text-muted-foreground mb-3;
   @apply leading-relaxed;
 }
 
