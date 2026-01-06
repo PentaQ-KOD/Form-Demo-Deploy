@@ -32,7 +32,7 @@ interface FormConfig {
     logoUrl?: string;
     successUrl?: string;
     notifyEmails?: string;
-    slackWebhook?: string;
+    slackChannel?: string;
     responseSheet?: string;
     formMode?: 'single' | 'quiz';
     driveUrl?: string;  // Google Drive folder URL for file uploads
@@ -389,7 +389,7 @@ export default function FormPage() {
                 answers,
                 questions: formConfig.questions, // For email type detection
                 notify_emails: formConfig.notifyEmails || '', // Admin emails  
-                slack_webhook: formConfig.slackWebhook || '', // Slack webhook
+                slack_channel: formConfig.slackChannel || '', // Slack channel
                 response_sheet: formConfig.responseSheet || '', // Response sheet URL
                 drive_url: formConfig.driveUrl || '', // Google Drive folder URL
                 sender_email: formConfig.senderEmail || '', // Sender email address

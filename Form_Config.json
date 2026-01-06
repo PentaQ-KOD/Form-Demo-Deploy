@@ -2,21 +2,48 @@
   "nodes": [
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $json.slackWebhook }}",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": {{ JSON.stringify($json.slackMessage) }}\n}",
-        "options": {}
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.emailCredential }}",
+                    "rightValue": "pir",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    },
+                    "id": "a9c83749-c8a5-49b9-9f5c-808d403c0ef5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pi R Square"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "allMatchingOutputs": false
+        }
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
       "position": [
-        8512,
-        5632
+        14720,
+        11392
       ],
-      "id": "1c4eab2f-0abc-4360-bb74-549c0915a986",
-      "name": "HTTP Send to Slack"
+      "id": "90a87099-7d06-4a18-8f70-861c2054446f",
+      "name": "Switch Email Route"
     },
     {
       "parameters": {
@@ -46,10 +73,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        7696,
-        5120
+        13952,
+        11104
       ],
-      "id": "7497139d-4ab8-4c8b-ad87-a178c9a7f45a",
+      "id": "d3165ead-fe75-4c08-a57e-9ea683b4f60d",
       "name": "Has Files?"
     },
     {
@@ -59,10 +86,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        9456,
-        5024
+        15712,
+        11008
       ],
-      "id": "a7ebb171-c253-4eae-8534-a6a0395dd661",
+      "id": "4bc167bf-56d7-4fcd-bc6c-a499552a59f0",
       "name": "Create Drive Link"
     },
     {
@@ -85,10 +112,10 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        9248,
-        5024
+        15504,
+        11008
       ],
-      "id": "830688ac-c8d2-4f35-a6b0-959f43a15752",
+      "id": "a1dc5fdf-0273-4146-8e9a-932fca439eba",
       "name": "Upload to Google Drive",
       "alwaysOutputData": false,
       "credentials": {
@@ -105,10 +132,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        8944,
-        4944
+        15200,
+        10928
       ],
-      "id": "e51a83fe-38aa-454c-875a-ff8afe6f9447",
+      "id": "babb3a59-cd7b-4e07-953a-b1cc3b902469",
       "name": "Use Created Folder"
     },
     {
@@ -133,10 +160,10 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        8704,
-        4944
+        14960,
+        10928
       ],
-      "id": "addd362d-f007-49db-baf4-6732a7fa9be6",
+      "id": "57a81f95-b824-4ca2-8682-b7c1c0207229",
       "name": "Create Subfolder",
       "credentials": {
         "googleDriveOAuth2Api": {
@@ -152,10 +179,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        8832,
-        4800
+        15088,
+        10784
       ],
-      "id": "f4775378-ebc1-4fc3-9057-341af342e2b6",
+      "id": "0b638599-df9f-48e5-9cac-44dca27c5536",
       "name": "Use Existing Folder"
     },
     {
@@ -186,10 +213,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        8512,
-        4880
+        14768,
+        10864
       ],
-      "id": "dbcd9434-2ab6-4517-98d2-1acb32cf1534",
+      "id": "2860c9f1-3f03-4cab-8bff-32b6beb4733a",
       "name": "Folder Exists?"
     },
     {
@@ -204,10 +231,10 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        8336,
-        4880
+        14592,
+        10864
       ],
-      "id": "b56c0160-ba5c-4fa3-b582-b5ad59db4bb0",
+      "id": "b2ba773a-2cf4-47c9-9468-7c4431a80b39",
       "name": "Search Folder",
       "credentials": {
         "googleDriveOAuth2Api": {
@@ -244,10 +271,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        8144,
-        5008
+        14400,
+        10992
       ],
-      "id": "94d40788-91af-482d-9db2-a27a086382cc",
+      "id": "19041cf5-3b82-4629-bbf6-82f433dc65b5",
       "name": "Need Subfolder?"
     },
     {
@@ -257,64 +284,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        7920,
-        5008
+        14176,
+        10992
       ],
-      "id": "34443f11-d80c-44b1-9adb-a3a0458c4951",
+      "id": "3fbd9a29-0abf-486a-a519-19cd98b5bfe5",
       "name": "Extract File Data"
-    },
-    {
-      "parameters": {
-        "fromEmail": "={{ $json.senderEmail || 'pantawat@pirsquare.net' }}",
-        "toEmail": "={{ $json.userEmail }}",
-        "subject": "ขอบคุณที่กรอกแบบฟอร์ม: {{ $json.formTitle }}",
-        "emailFormat": "html",
-        "html": "สวัสดีค่ะ<br><br>ขอบคุณที่กรอกแบบฟอร์ม \"{{ $json.formTitle }}\"<br><br>เราได้รับข้อมูลของคุณเรียบร้อยแล้ว<br><br>📅 วันที่ส่ง: {{ $json.formattedDate }}<br>📋 Form ID: {{ $json.formId }}<br><br>ขอบคุณครับ/ค่ะ<br>{{ $json.senderName || 'PiR Academy' }}",
-        "options": {
-          "senderName": "={{ $json.senderName || 'PiR Academy' }}"
-        }
-      },
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2.1,
-      "position": [
-        8512,
-        5472
-      ],
-      "id": "cf53f96d-f24b-410a-84ba-6f09aa19a749",
-      "name": "Send User Email",
-      "credentials": {
-        "smtp": {
-          "id": "qecgNh2jxNoes8Rr",
-          "name": "SMTP account POOH"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "fromEmail": "={{ $json.senderEmail || 'pantawat@pirsquare.net' }}",
-        "toEmail": "={{ $json.notifyEmails }}",
-        "subject": "[PiR Form] New submission: {{ $json.formTitle }}",
-        "emailFormat": "html",
-        "html": "={{ $json.emailMessage }}",
-        "options": {
-          "senderName": "={{ $json.senderName || 'PiR Academy' }}",
-          "replyTo": "={{ $json.userEmail }}"
-        }
-      },
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2.1,
-      "position": [
-        8512,
-        5312
-      ],
-      "id": "1fbd4c1b-cd26-4bf9-bc06-833bab4bccf0",
-      "name": "Send Admin Email",
-      "credentials": {
-        "smtp": {
-          "id": "qecgNh2jxNoes8Rr",
-          "name": "SMTP account POOH"
-        }
-      }
     },
     {
       "parameters": {
@@ -325,10 +299,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        7696,
-        4928
+        13952,
+        10912
       ],
-      "id": "7e41fa82-52df-49f2-86d8-d572c590edf3",
+      "id": "f179a622-4e0e-4bf3-95cf-a6b410b835b2",
       "name": "Respond Success"
     },
     {
@@ -380,8 +354,8 @@
               "removed": false
             },
             {
-              "id": "name",
-              "displayName": "name",
+              "id": "instructor_quality",
+              "displayName": "instructor_quality",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -390,8 +364,8 @@
               "removed": false
             },
             {
-              "id": "email",
-              "displayName": "email",
+              "id": "content_relevance",
+              "displayName": "content_relevance",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -400,8 +374,8 @@
               "removed": false
             },
             {
-              "id": "phone",
-              "displayName": "phone",
+              "id": "practical_application",
+              "displayName": "practical_application",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -410,8 +384,8 @@
               "removed": false
             },
             {
-              "id": "birthdate",
-              "displayName": "birthdate",
+              "id": "learning_materials",
+              "displayName": "learning_materials",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -420,8 +394,8 @@
               "removed": false
             },
             {
-              "id": "satisfaction",
-              "displayName": "satisfaction",
+              "id": "support_service",
+              "displayName": "support_service",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -430,8 +404,8 @@
               "removed": false
             },
             {
-              "id": "gender",
-              "displayName": "gender",
+              "id": "best_part",
+              "displayName": "best_part",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -440,8 +414,8 @@
               "removed": false
             },
             {
-              "id": "province",
-              "displayName": "province",
+              "id": "additional_feedback",
+              "displayName": "additional_feedback",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -450,28 +424,8 @@
               "removed": false
             },
             {
-              "id": "attachment",
-              "displayName": "attachment",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "optional_text",
-              "displayName": "optional_text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "responseSheet",
-              "displayName": "responseSheet",
+              "id": "contact_info",
+              "displayName": "contact_info",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -488,10 +442,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        8240,
-        5232
+        14496,
+        11216
       ],
-      "id": "405e1fd3-3040-499e-a68b-7893478507a9",
+      "id": "ffab80c9-2800-4735-bdce-7165fe1414d9",
       "name": "Append to Log",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -507,10 +461,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        8240,
-        5424
+        14496,
+        11408
       ],
-      "id": "9127a365-40c7-4c75-9c00-8ac8c166c884",
+      "id": "23766486-a1e4-4fc2-a1a1-858ae60733d9",
       "name": "Format Messages with Links"
     },
     {
@@ -520,23 +474,23 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        8032,
-        5232
+        14288,
+        11216
       ],
-      "id": "f52faf8b-735d-4bd2-9773-a739e68ec848",
+      "id": "9191e06a-ee7a-472d-8db7-45d3050df286",
       "name": "Set Log Fields"
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json.body;\nconst answers = body.answers || {};\nconst questions = body.questions || [];\n\n// Config from Google Sheets\nconst notifyEmails = body.notify_emails || '';\nconst slackWebhook = body.slack_webhook || '';\nconst responseSheet = body.response_sheet || '';\nconst driveUrl = body.drive_url || '';  // ว่าง = สร้าง subfolder\nconst senderEmail = body.sender_email || 'pantawat@pirsquare.net';  // default sender\nconst senderName = body.sender_name || 'PiR Academy';  // default sender name\n\n// Auto-detect user email\nlet userEmail = '';\nfor (const q of questions) {\n  if (q.type === 'email' && answers[q.id]) {\n    userEmail = answers[q.id];\n    break;\n  }\n}\n\n// Process file fields\nconst fileFields = {};\nconst regularAnswers = {};\n\nfor (const [key, value] of Object.entries(answers)) {\n  if (value && typeof value === 'object' && value.base64) {\n    fileFields[key] = value;\n    regularAnswers[key] = `[FILE: ${value.filename}]`;\n  } else {\n    regularAnswers[key] = value;\n  }\n}\n\n// Format date\nconst submittedAt = body.submitted_at || new Date().toISOString();\nconst formattedDate = new Date(submittedAt).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });\n\n// Format answers for display\nconst answersFormatted = Object.entries(regularAnswers)\n  .map(([key, value]) => `• ${key}: ${value ?? '-'}`)\n  .join('\\n');\n\n// ========== EMAIL FORMAT (HTML) ==========\nconst emailMessage = `\n<div style=\"font-family: Arial, sans-serif; max-width: 600px;\">\n  <h2 style=\"color: #333;\">📋 ฟอร์มใหม่: ${body.form_title || ''}</h2>\n  \n  <table style=\"width: 100%; border-collapse: collapse; margin: 16px 0;\">\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📅 ส่งเมื่อ:</strong></td><td style=\"padding: 8px;\">${formattedDate}</td></tr>\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📧 อีเมลผู้ส่ง:</strong></td><td style=\"padding: 8px;\">${userEmail || '-'}</td></tr>\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>🆔 Form ID:</strong></td><td style=\"padding: 8px;\">${body.form_id || ''}</td></tr>\n  </table>\n\n  <h3>📝 คำตอบ:</h3>\n  <ul style=\"line-height: 1.8;\">\n    ${Object.entries(regularAnswers).map(([k, v]) => `<li><strong>${k}:</strong> ${v ?? '-'}</li>`).join('')}\n  </ul>\n\n  <hr style=\"margin: 20px 0;\">\n  <p>📎 <strong>ไฟล์แนบ:</strong> ${Object.keys(fileFields).length > 0 ? '✅ มี' : '❌ ไม่มี'}</p>\n  <p>📊 <a href=\"${responseSheet}\">ดู Response Sheet</a></p>\n</div>`;\n\n// ========== SLACK FORMAT (Markdown) ==========\nconst slackMessage = `📋 *ฟอร์มใหม่: ${body.form_title || ''}*\n\n━━━━━━━━━━━━━━━━━━━━━━\n📅 *ส่งเมื่อ:* ${formattedDate}\n📧 *อีเมลผู้ส่ง:* ${userEmail || 'ไม่ระบุ'}\n🆔 *Form ID:* ${body.form_id || '-'}\n\n━━━━━━━━━━━━━━━━━━━━━━\n*📝 คำตอบ:*\n${Object.entries(regularAnswers).map(([k, v]) => `• *${k}:* ${v ?? '-'}`).join('\\n')}\n\n━━━━━━━━━━━━━━━━━━━━━━\n📎 *ไฟล์แนบ:* ${Object.keys(fileFields).length > 0 ? '✅ มี' : '❌ ไม่มี'}\n📊 *Response Sheet:* <${responseSheet}|ดู Google Sheet>`;\n\nreturn [{\n  json: {\n    submittedAt: submittedAt,\n    formattedDate: formattedDate,\n    formId: body.form_id || '',\n    formTitle: body.form_title || '',\n    answers: JSON.stringify(regularAnswers, null, 2),\n    notifyEmails: notifyEmails,\n    slackWebhook: slackWebhook,\n    responseSheet: responseSheet,\n    driveUrl: driveUrl,\n    userEmail: userEmail,\n    senderEmail: senderEmail,\n    senderName: senderName,\n    fileFields: fileFields,\n    hasFiles: Object.keys(fileFields).length > 0,\n    // Pre-formatted messages\n    emailMessage: emailMessage,\n    slackMessage: slackMessage\n  }\n}];"
+        "jsCode": "const body = $input.first().json.body;\nconst answers = body.answers || {};\nconst questions = body.questions || [];\n\n// Config from Google Sheets\nconst notifyEmails = body.notify_emails || '';\nconst slackChannel = body.slack_channel || '';\nconst responseSheet = body.response_sheet || '';\nconst driveUrl = body.drive_url || '';  // ว่าง = สร้าง subfolder\nconst senderEmail = body.sender_email || 'pantawat@pirsquare.net';  // default sender\nconst senderName = body.sender_name || 'PiR Academy';  // default sender name\nconst emailCredential = body.email_credential || 'pooh';  // default to pooh\n\n// Auto-detect user email (improved)\nlet userEmail = '';\n\n// Method 1: Look for field with type = 'email'\nfor (const q of questions) {\n  if (q.type === 'email' && answers[q.id]) {\n    userEmail = answers[q.id];\n    break;\n  }\n}\n\n// Method 2: If not found, look for common email field names\nif (!userEmail) {\n  const emailFieldNames = ['contact_info', 'email', 'user_email', 'contact_email', 'your_email'];\n  for (const fieldName of emailFieldNames) {\n    if (answers[fieldName]) {\n      userEmail = answers[fieldName];\n      break;\n    }\n  }\n}\n\n// Process file fields\nconst fileFields = {};\nconst regularAnswers = {};\n\nfor (const [key, value] of Object.entries(answers)) {\n  if (value && typeof value === 'object' && value.base64) {\n    fileFields[key] = value;\n    regularAnswers[key] = `[FILE: ${value.filename}]`;\n  } else {\n    regularAnswers[key] = value;\n  }\n}\n\n// Format date\nconst submittedAt = body.submitted_at || new Date().toISOString();\nconst formattedDate = new Date(submittedAt).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });\n\n// Format answers for display\nconst answersFormatted = Object.entries(regularAnswers)\n  .map(([key, value]) => `• ${key}: ${value ?? '-'}`)\n  .join('\\n');\n\n// ========== EMAIL FORMAT (HTML) ==========\nconst emailMessage = `\n<div style=\"font-family: Arial, sans-serif; max-width: 600px;\">\n  <h2 style=\"color: #333;\">📋 ฟอร์มใหม่: ${body.form_title || ''}</h2>\n  \n  <table style=\"width: 100%; border-collapse: collapse; margin: 16px 0;\">\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📅 ส่งเมื่อ:</strong></td><td style=\"padding: 8px;\">${formattedDate}</td></tr>\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📧 อีเมลผู้ส่ง:</strong></td><td style=\"padding: 8px;\">${userEmail || '-'}</td></tr>\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>🆔 Form ID:</strong></td><td style=\"padding: 8px;\">${body.form_id || ''}</td></tr>\n  </table>\n\n  <h3>📝 คำตอบ:</h3>\n  <ul style=\"line-height: 1.8;\">\n    ${Object.entries(regularAnswers).map(([k, v]) => `<li><strong>${k}:</strong> ${v ?? '-'}</li>`).join('')}\n  </ul>\n\n  <hr style=\"margin: 20px 0;\">\n  <p>📎 <strong>ไฟล์แนบ:</strong> ${Object.keys(fileFields).length > 0 ? '✅ มี' : '❌ ไม่มี'}</p>\n  <p>📊 <a href=\"${responseSheet}\">ดู Response Sheet</a></p>\n</div>`;\n\n// ========== SLACK FORMAT (Markdown) ==========\nconst slackMessage = `📋 *ฟอร์มใหม่: ${body.form_title || ''}*\n\n━━━━━━━━━━━━━━━━━━━━━━\n📅 *ส่งเมื่อ:* ${formattedDate}\n📧 *อีเมลผู้ส่ง:* ${userEmail || 'ไม่ระบุ'}\n🆔 *Form ID:* ${body.form_id || '-'}\n\n━━━━━━━━━━━━━━━━━━━━━━\n*📝 คำตอบ:*\n${Object.entries(regularAnswers).map(([k, v]) => `• *${k}:* ${v ?? '-'}`).join('\\n')}\n\n━━━━━━━━━━━━━━━━━━━━━━\n📎 *ไฟล์แนบ:* ${Object.keys(fileFields).length > 0 ? '✅ มี' : '❌ ไม่มี'}\n📊 *Response Sheet:* <${responseSheet}|ดู Google Sheet>`;\n\nreturn [{\n  json: {\n    submittedAt: submittedAt,\n    formattedDate: formattedDate,\n    formId: body.form_id || '',\n    formTitle: body.form_title || '',\n    answers: JSON.stringify(regularAnswers, null, 2),\n    notifyEmails: notifyEmails,\n    slackChannel: slackChannel,\n    responseSheet: responseSheet,\n    driveUrl: driveUrl,\n    userEmail: userEmail,\n    senderEmail: senderEmail,\n    senderName: senderName,\n    emailCredential: emailCredential,\n    fileFields: fileFields,\n    hasFiles: Object.keys(fileFields).length > 0,\n    // Pre-formatted messages\n    emailMessage: emailMessage,\n    slackMessage: slackMessage\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        7472,
-        5216
+        13728,
+        11200
       ],
-      "id": "3e618ab4-76c8-44fc-87b3-7a38d50c78fa",
+      "id": "82399f2e-ff72-4a20-941a-51df70d697e2",
       "name": "Format Form Submission"
     },
     {
@@ -549,10 +503,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        7248,
-        5216
+        13504,
+        11200
       ],
-      "id": "ab30ebfc-d008-4762-98b1-0286469e4ea4",
+      "id": "06c11774-91fd-4159-8e0a-eff2109f5141",
       "name": "Submit Webhook",
       "webhookId": "consent-submit-webhook"
     },
@@ -565,23 +519,23 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        7920,
-        4512
+        14176,
+        10496
       ],
-      "id": "758fe5db-2e1d-49b4-b436-b161b5760a74",
+      "id": "89331e18-7123-42f5-9a58-57b63667a380",
       "name": "Form Not Found"
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\n\n// Parse the form definition JSON from Google Sheets\nconst formDefinition = item['form definition'];\n\n// Get additional config from Google Sheets columns\nconst logoUrl = item['logo url'] || '';\nconst successUrl = item['success url'] || '';\nconst responseSheet = item['response sheet'] || '';\nconst slackWebhook = item['slackWebhook'] || '';\nconst notifyEmails = item['notify emails'] || '';\nconst formMode = item['form mode'] || 'single';\nconst driveUrl = item['drive url'] || '';  // ว่าง = สร้าง subfolder\nconst senderEmail = item['sender_email'] || 'pantawat@pirsquare.net';  // default sender\nconst senderName = item['sender_name'] || 'PiR Academy';  // default sender name\n\ntry {\n  let parsed = JSON.parse(formDefinition);\n  \n  // If wrapped in 'json' key (Firecrawl format), unwrap it\n  if (parsed.json && parsed.json.questions) {\n    parsed = parsed.json;\n  }\n  \n  // Build config object\n  const config = {\n    logoUrl: logoUrl || parsed.logoUrl || '',\n    successUrl: successUrl || parsed.successUrl || '',\n    responseSheet,\n    slackWebhook,\n    notifyEmails,\n    formMode,\n    driveUrl,\n    senderEmail,\n    senderName\n  };\n  \n  // Check if it's Firecrawl format with meta/fields\n  if (parsed.meta && parsed.fields) {\n    const questions = parsed.fields.map(field => {\n      const q = { id: field.name, type: field.type, label: field.label, required: field.required || false };\n      if (field.config) {\n        if (field.config.placeholder) q.placeholder = field.config.placeholder;\n        if (field.config.description) q.description = field.config.description;\n        if (field.config.options) q.options = field.config.options.map(opt => typeof opt === 'string' ? opt : opt.label);\n        if (field.config.accept_types) q.accept = field.config.accept_types;\n        if (field.config.max_file_size_mb) q.maxSize = field.config.max_file_size_mb;\n      }\n      if (q.type === 'number') q.type = 'text';\n      return q;\n    });\n    return [{ json: { title: parsed.meta.title || 'Untitled', description: parsed.meta.description || '', questions, ...config } }];\n  }\n  \n  // Standard format\n  return [{ json: { title: parsed.title || 'Untitled', description: parsed.description || '', questions: parsed.questions || [], ...config } }];\n} catch (e) {\n  return [{ json: { error: 'Invalid form definition', message: e.message } }];\n}"
+        "jsCode": "const item = $input.first().json;\n\n// Parse the form definition JSON from Google Sheets\nconst formDefinition = item['form definition'];\n\n// Get additional config from Google Sheets columns\nconst logoUrl = item['logo url'] || '';\nconst successUrl = item['success url'] || '';\nconst responseSheet = item['response sheet'] || '';\nconst slackChannel = item['slackChannel'] || '';\nconst notifyEmails = item['notify emails'] || '';\nconst formMode = item['form mode'] || 'single';\nconst driveUrl = item['drive url'] || '';  // ว่าง = สร้าง subfolder\nconst senderEmail = item['sender_email'] || 'pantawat@pirsquare.net';  // default sender\nconst senderName = item['sender_name'] || 'PiR Academy';  // default sender name\n\ntry {\n  let parsed = JSON.parse(formDefinition);\n  \n  // If wrapped in 'json' key (Firecrawl format), unwrap it\n  if (parsed.json && parsed.json.questions) {\n    parsed = parsed.json;\n  }\n  \n  // Build config object\n  const config = {\n    logoUrl: logoUrl || parsed.logoUrl || '',\n    successUrl: successUrl || parsed.successUrl || '',\n    responseSheet,\n    slackChannel,\n    notifyEmails,\n    formMode,\n    driveUrl,\n    senderEmail,\n    senderName\n  };\n  \n  // Check if it's Firecrawl format with meta/fields\n  if (parsed.meta && parsed.fields) {\n    const questions = parsed.fields.map(field => {\n      const q = { id: field.name, type: field.type, label: field.label, required: field.required || false };\n      if (field.config) {\n        if (field.config.placeholder) q.placeholder = field.config.placeholder;\n        if (field.config.description) q.description = field.config.description;\n        if (field.config.options) q.options = field.config.options.map(opt => typeof opt === 'string' ? opt : opt.label);\n        if (field.config.accept_types) q.accept = field.config.accept_types;\n        if (field.config.max_file_size_mb) q.maxSize = field.config.max_file_size_mb;\n      }\n      if (q.type === 'number') q.type = 'text';\n      return q;\n    });\n    return [{ json: { title: parsed.meta.title || 'Untitled', description: parsed.meta.description || '', questions, ...config } }];\n  }\n  \n  // Standard format\n  return [{ json: { title: parsed.title || 'Untitled', description: parsed.description || '', questions: parsed.questions || [], ...config } }];\n} catch (e) {\n  return [{ json: { error: 'Invalid form definition', message: e.message } }];\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        7920,
-        4320
+        14176,
+        10304
       ],
-      "id": "74b7dad3-6e28-4869-88ed-f469b2e99823",
+      "id": "faf1cece-442f-43ee-9961-d0a96979eb47",
       "name": "Parse Form Definition"
     },
     {
@@ -594,10 +548,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        7248,
-        4416
+        13504,
+        10400
       ],
-      "id": "d5a3ea91-9a66-43d1-a841-d2a8da14d61a",
+      "id": "cf7078a3-dfcc-4931-801a-4430c5973d72",
       "name": "Fetch Webhook",
       "webhookId": "a77cbad6-c136-46f1-bd06-d435a94aefa5"
     },
@@ -630,10 +584,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        7696,
-        4416
+        13952,
+        10400
       ],
-      "id": "a629b3ed-cca8-4f0d-a781-56bde90881af",
+      "id": "91712265-723b-4b4d-8aed-491b7fa8f5ea",
       "name": "If"
     },
     {
@@ -665,10 +619,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        7472,
-        4416
+        13728,
+        10400
       ],
-      "id": "6ab657d3-84cf-48c3-af56-389bf4dc3609",
+      "id": "c751083b-da1c-4da7-8cde-063aa52cf4fc",
       "name": "get path",
       "alwaysOutputData": true,
       "credentials": {
@@ -686,14 +640,155 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        8144,
-        4416
+        14400,
+        10400
       ],
-      "id": "999dcb18-9b90-4a45-8b43-460534631e03",
+      "id": "a69e71d0-c34f-4d12-918e-39088fcfab05",
       "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Format Messages with Links').item.json.userEmail }}",
+        "subject": "=ขอบคุณที่กรอกแบบฟอร์ม: {{ $('Format Messages with Links').item.json.formTitle }}",
+        "message": "=สวัสดีค่ะ\n\nขอบคุณที่กรอกแบบฟอร์ม \"{{ $('Format Messages with Links').item.json.formTitle }}\"\n\nเราได้รับข้อมูลของคุณเรียบร้อยแล้ว\n\n📅 วันที่ส่ง: {{ $('Format Messages with Links').item.json.formattedDate }}\n📋 Form ID: {{ $('Format Messages with Links').item.json.formId }}\n\nขอบคุณครับ/ค่ะ\n{{ $json.senderName || 'PiR Academy' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        15136,
+        11488
+      ],
+      "id": "046b605a-c804-40af-a1af-04b60d05e3f7",
+      "name": "Send User Email (POOH)",
+      "webhookId": "75a44719-48bf-427d-81f6-ede033c87c3d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "i6xmL5GuY8gyrXK0",
+          "name": "Gmail Account - POOH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.notifyEmails }}",
+        "subject": "=[PiR Form] New submission: {{ $json.formTitle }}",
+        "message": "={{ $json.emailMessage }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        14928,
+        11456
+      ],
+      "id": "16c80706-b608-407d-806a-db18ddb287e6",
+      "name": "Send Admin Email (POOH)",
+      "webhookId": "eb1992cf-875a-4e9b-b3c0-7b60fa16d401",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "i6xmL5GuY8gyrXK0",
+          "name": "Gmail Account - POOH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Format Messages with Links').item.json.userEmail }}",
+        "subject": "=ขอบคุณที่กรอกแบบฟอร์ม: {{ $('Format Messages with Links').item.json.formTitle }}",
+        "message": "=สวัสดีค่ะ\n\nขอบคุณที่กรอกแบบฟอร์ม \"{{ $('Format Messages with Links').item.json.formTitle }}\"\n\nเราได้รับข้อมูลของคุณเรียบร้อยแล้ว\n\n📅 วันที่ส่ง: {{ $('Format Messages with Links').item.json.formattedDate }}\n📋 Form ID: {{ $('Format Messages with Links').item.json.formId }}\n\nขอบคุณครับ/ค่ะ\n{{ $json.senderName || 'PiR Academy' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        15120,
+        11328
+      ],
+      "id": "d47ca0b6-26c6-47fc-94b4-fbf7dbbff0cb",
+      "name": "Send User Email (PiR)",
+      "webhookId": "3124d033-ab05-4834-af88-b2220daf8be6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Kv3ySnsdX1rdt55e",
+          "name": "Admin@piracademy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.notifyEmails }}",
+        "subject": "=[PiR Form] New submission: {{ $json.formTitle }}",
+        "message": "={{ $json.emailMessage }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        14896,
+        11328
+      ],
+      "id": "ba607982-bc2a-4b3a-b3ac-85297fa5c64f",
+      "name": "Send Admin Email (PiR)",
+      "webhookId": "7b7b071b-7307-4e28-8e94-69b2bdf6433b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Kv3ySnsdX1rdt55e",
+          "name": "Admin@piracademy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.slackChannel }}",
+          "mode": "name"
+        },
+        "text": "={{ $json.slackMessage }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        14720,
+        11632
+      ],
+      "id": "a93e0317-4f4b-428c-95c5-e6785a1306c6",
+      "name": "Send a message",
+      "webhookId": "af171510-9c49-4477-9102-7588905bd6e9",
+      "credentials": {
+        "slackApi": {
+          "id": "22vlM1Z55MCa8hUX",
+          "name": "Pi R SQUARE"
+        }
+      }
     }
   ],
   "connections": {
+    "Switch Email Route": {
+      "main": [
+        [
+          {
+            "node": "Send Admin Email (PiR)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Admin Email (POOH)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Has Files?": {
       "main": [
         [
@@ -829,17 +924,12 @@
       "main": [
         [
           {
-            "node": "Send Admin Email",
+            "node": "Switch Email Route",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Send User Email",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "HTTP Send to Slack",
+            "node": "Send a message",
             "type": "main",
             "index": 0
           }
@@ -945,6 +1035,28 @@
         [
           {
             "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Admin Email (POOH)": {
+      "main": [
+        [
+          {
+            "node": "Send User Email (POOH)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Admin Email (PiR)": {
+      "main": [
+        [
+          {
+            "node": "Send User Email (PiR)",
             "type": "main",
             "index": 0
           }
