@@ -1,0 +1,960 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.slackWebhook }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": {{ JSON.stringify($json.slackMessage) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        8512,
+        5632
+      ],
+      "id": "1c4eab2f-0abc-4360-bb74-549c0915a986",
+      "name": "HTTP Send to Slack"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-files-check",
+              "leftValue": "={{ $json.hasFiles }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7696,
+        5120
+      ],
+      "id": "7497139d-4ab8-4c8b-ad87-a178c9a7f45a",
+      "name": "Has Files?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const driveResponse = $input.first().json;\nconst prevData = $('Extract File Data').first().json;\n\n// Google Drive file link\nconst fileId = driveResponse.id;\nconst viewLink = `https://drive.google.com/file/d/${fileId}/view`;\n\n// Update answers to include file link\nconst answers = JSON.parse(prevData.answers || '{}');\nconst fieldId = prevData.currentFieldId;\nanswers[fieldId] = viewLink;\n\nreturn [{\n  json: {\n    submittedAt: prevData.submittedAt,\n    formId: prevData.formId,\n    formTitle: prevData.formTitle,\n    answers: JSON.stringify(answers, null, 2),\n    notifyEmails: prevData.notifyEmails,\n    slackWebhook: prevData.slackWebhook,\n    responseSheet: prevData.responseSheet,\n    userEmail: prevData.userEmail,\n    fileLink: viewLink\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9456,
+        5024
+      ],
+      "id": "a7ebb171-c253-4eae-8534-a6a0395dd661",
+      "name": "Create Drive Link"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "file",
+        "name": "={{ $json.currentFilename }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json.targetFolderId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        9248,
+        5024
+      ],
+      "id": "830688ac-c8d2-4f35-a6b0-959f43a15752",
+      "name": "Upload to Google Drive",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "XIuJit5Z5Xpiw5Pj",
+          "name": "Google Drive account - POOH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const prevData = $('Extract File Data').first().json;\nconst createdFolder = $input.first().json;\n\n// Use the newly created folder ID\nreturn [{\n  json: {\n    ...prevData,\n    targetFolderId: createdFolder.id\n  },\n  binary: $('Extract File Data').first().binary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8944,
+        4944
+      ],
+      "id": "e51a83fe-38aa-454c-875a-ff8afe6f9447",
+      "name": "Use Created Folder"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Extract File Data').first().json.formId }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Btv-qVE_IEsK8_oFnQGhkYTGR6ncYof5",
+          "mode": "list",
+          "cachedResultName": "FORM - Image",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Btv-qVE_IEsK8_oFnQGhkYTGR6ncYof5"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        8704,
+        4944
+      ],
+      "id": "addd362d-f007-49db-baf4-6732a7fa9be6",
+      "name": "Create Subfolder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "XIuJit5Z5Xpiw5Pj",
+          "name": "Google Drive account - POOH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const prevData = $('Extract File Data').first().json;\nconst existingFolder = $input.first().json;\n\n// Use existing folder ID\nreturn [{\n  json: {\n    ...prevData,\n    targetFolderId: existingFolder.id\n  },\n  binary: $('Extract File Data').first().binary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8832,
+        4800
+      ],
+      "id": "f4775378-ebc1-4fc3-9057-341af342e2b6",
+      "name": "Use Existing Folder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "folder-exists-check",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        8512,
+        4880
+      ],
+      "id": "dbcd9434-2ab6-4517-98d2-1acb32cf1534",
+      "name": "Folder Exists?"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "={{ \"name='\" + $('Extract File Data').first().json.formId + \"' and '1Btv-qVE_IEsK8_oFnQGhkYTGR6ncYof5' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false\" }}",
+        "limit": 1,
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        8336,
+        4880
+      ],
+      "id": "b56c0160-ba5c-4fa3-b582-b5ad59db4bb0",
+      "name": "Search Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "XIuJit5Z5Xpiw5Pj",
+          "name": "Google Drive account - POOH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-use-subfolder",
+              "leftValue": "={{ $json.useSubfolder }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        8144,
+        5008
+      ],
+      "id": "94d40788-91af-482d-9db2-a27a086382cc",
+      "name": "Need Subfolder?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst fileFields = item.fileFields || {};\nconst fieldIds = Object.keys(fileFields);\n\nif (fieldIds.length === 0) {\n  return [{ json: { ...item, fileLinks: {} } }];\n}\n\n// Process first file (for simplicity, handle one file at a time)\nconst fieldId = fieldIds[0];\nconst file = fileFields[fieldId];\n\n// Remove data URI prefix (data:mime/type;base64,)\nconst base64Clean = file.base64.split(',')[1] || file.base64;\n\n// Determine target folder\nconst driveUrl = item.driveUrl || '';\nlet targetFolderId = '1Btv-qVE_IEsK8_oFnQGhkYTGR6ncYof5'; // default folder: FORM - Image\n\nif (driveUrl) {\n  // Extract folder ID from Google Drive URL\n  // Formats: /folders/ID, /d/ID, ?id=ID\n  const folderMatch = driveUrl.match(/folders\\/([a-zA-Z0-9_-]+)|d\\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)/);\n  if (folderMatch) {\n    targetFolderId = folderMatch[1] || folderMatch[2] || folderMatch[3];\n  }\n}\n\nreturn [{\n  json: {\n    ...item,\n    currentFieldId: fieldId,\n    currentFilename: file.filename,\n    currentMimeType: file.mimeType,\n    targetFolderId: targetFolderId,\n    useSubfolder: !driveUrl // ถ้าไม่มี driveUrl จะสร้าง subfolder ตาม formId\n  },\n  binary: {\n    file: {\n      data: base64Clean,\n      mimeType: file.mimeType,\n      fileName: file.filename\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7920,
+        5008
+      ],
+      "id": "34443f11-d80c-44b1-9adb-a3a0458c4951",
+      "name": "Extract File Data"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.senderEmail || 'pantawat@pirsquare.net' }}",
+        "toEmail": "={{ $json.userEmail }}",
+        "subject": "ขอบคุณที่กรอกแบบฟอร์ม: {{ $json.formTitle }}",
+        "emailFormat": "html",
+        "html": "สวัสดีค่ะ<br><br>ขอบคุณที่กรอกแบบฟอร์ม \"{{ $json.formTitle }}\"<br><br>เราได้รับข้อมูลของคุณเรียบร้อยแล้ว<br><br>📅 วันที่ส่ง: {{ $json.formattedDate }}<br>📋 Form ID: {{ $json.formId }}<br><br>ขอบคุณครับ/ค่ะ<br>{{ $json.senderName || 'PiR Academy' }}",
+        "options": {
+          "senderName": "={{ $json.senderName || 'PiR Academy' }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        8512,
+        5472
+      ],
+      "id": "cf53f96d-f24b-410a-84ba-6f09aa19a749",
+      "name": "Send User Email",
+      "credentials": {
+        "smtp": {
+          "id": "qecgNh2jxNoes8Rr",
+          "name": "SMTP account POOH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.senderEmail || 'pantawat@pirsquare.net' }}",
+        "toEmail": "={{ $json.notifyEmails }}",
+        "subject": "[PiR Form] New submission: {{ $json.formTitle }}",
+        "emailFormat": "html",
+        "html": "={{ $json.emailMessage }}",
+        "options": {
+          "senderName": "={{ $json.senderName || 'PiR Academy' }}",
+          "replyTo": "={{ $json.userEmail }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        8512,
+        5312
+      ],
+      "id": "1fbd4c1b-cd26-4bf9-bc06-833bab4bccf0",
+      "name": "Send Admin Email",
+      "credentials": {
+        "smtp": {
+          "id": "qecgNh2jxNoes8Rr",
+          "name": "SMTP account POOH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Form submitted successfully' }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        7696,
+        4928
+      ],
+      "id": "7e41fa82-52df-49f2-86d8-d572c590edf3",
+      "name": "Respond Success"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Submit Webhook').item.json.body.response_sheet || 'https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?gid=61872764#gid=61872764' }} ",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Submit Webhook').item.json.body.response_sheet || 'https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?gid=61872764#gid=61872764' }}",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Submitted At",
+              "displayName": "Submitted At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Form ID",
+              "displayName": "Form ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Form Title",
+              "displayName": "Form Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "birthdate",
+              "displayName": "birthdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "satisfaction",
+              "displayName": "satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gender",
+              "displayName": "gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "province",
+              "displayName": "province",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attachment",
+              "displayName": "attachment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "optional_text",
+              "displayName": "optional_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "responseSheet",
+              "displayName": "responseSheet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        8240,
+        5232
+      ],
+      "id": "405e1fd3-3040-499e-a68b-7893478507a9",
+      "name": "Append to Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eiXrRmu5i3vrFtp9",
+          "name": "POOH' GOOGLE SHEETS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const logData = $input.first().json;\nconst prevData = $('Format Form Submission').first().json;\n\n// Parse answers from Set Log Fields output\nlet answers = {};\n\n// Try to get answers from different sources\nif (logData.answers) {\n  try {\n    answers = typeof logData.answers === 'string' ? JSON.parse(logData.answers) : logData.answers;\n  } catch (e) {\n    console.log('Failed to parse logData.answers:', e);\n  }\n}\n\n// Fallback: get from prevData if logData doesn't have it\nif (Object.keys(answers).length === 0 && prevData.answers) {\n  try {\n    answers = typeof prevData.answers === 'string' ? JSON.parse(prevData.answers) : prevData.answers;\n  } catch (e) {\n    console.log('Failed to parse prevData.answers:', e);\n  }\n}\n\n// แยก file links และ regular answers\nconst fileLinks = {};\nconst regularAnswers = {};\n\nfor (const [key, value] of Object.entries(answers)) {\n  if (typeof value === 'string' && value.startsWith('https://drive.google.com')) {\n    fileLinks[key] = value;\n  } else {\n    regularAnswers[key] = value;\n  }\n}\n\nconst formattedDate = prevData.formattedDate || prevData.submittedAt;\nconst userEmail = prevData.userEmail;\nconst formTitle = prevData.formTitle;\nconst formId = prevData.formId;\nconst responseSheet = prevData.responseSheet;\n\n// ========== EMAIL FORMAT (HTML) ==========\nlet answersHtml = '';\nfor (const [k, v] of Object.entries(regularAnswers)) {\n  answersHtml += '<li><strong>' + k + ':</strong> ' + (v ?? '-') + '</li>';\n}\n\nlet fileLinksHtml = '';\nif (Object.keys(fileLinks).length > 0) {\n  fileLinksHtml = '<h3>📎 ไฟล์แนบ:</h3><ul style=\"line-height: 1.8;\">';\n  for (const [field, link] of Object.entries(fileLinks)) {\n    fileLinksHtml += '<li><strong>' + field + ':</strong> <a href=\"' + link + '\">ดูไฟล์</a></li>';\n  }\n  fileLinksHtml += '</ul>';\n}\n\nconst emailMessage = '<div style=\"font-family: Arial, sans-serif; max-width: 600px;\">' +\n  '<h2 style=\"color: #333;\">📋 ฟอร์มใหม่: ' + formTitle + '</h2>' +\n  '<table style=\"width: 100%; border-collapse: collapse; margin: 16px 0;\">' +\n  '<tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📅 ส่งเมื่อ:</strong></td><td style=\"padding: 8px;\">' + formattedDate + '</td></tr>' +\n  '<tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📧 อีเมลผู้ส่ง:</strong></td><td style=\"padding: 8px;\">' + (userEmail || '-') + '</td></tr>' +\n  '<tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>🆔 Form ID:</strong></td><td style=\"padding: 8px;\">' + formId + '</td></tr>' +\n  '</table>' +\n  '<h3>📝 คำตอบ:</h3>' +\n  '<ul style=\"line-height: 1.8;\">' + answersHtml + '</ul>' +\n  fileLinksHtml +\n  '<hr style=\"margin: 20px 0;\">' +\n  '<p>📊 <a href=\"' + responseSheet + '\">ดู Response Sheet</a></p>' +\n  '</div>';\n\n// ========== SLACK FORMAT (Markdown) ==========\nlet answersSlack = '';\nfor (const [k, v] of Object.entries(regularAnswers)) {\n  answersSlack += '• *' + k + ':* ' + (v ?? '-') + '\\n';\n}\n\nlet fileLinksSlack = '';\nif (Object.keys(fileLinks).length > 0) {\n  fileLinksSlack = '\\n━━━━━━━━━━━━━━━━━━━━━━\\n*📎 ไฟล์แนบ:*\\n';\n  for (const [field, link] of Object.entries(fileLinks)) {\n    fileLinksSlack += '• *' + field + ':* <' + link + '|ดูไฟล์>\\n';\n  }\n}\n\nconst slackMessage = '📋 *ฟอร์มใหม่: ' + formTitle + '*\\n\\n' +\n  '━━━━━━━━━━━━━━━━━━━━━━\\n' +\n  '📅 *ส่งเมื่อ:* ' + formattedDate + '\\n' +\n  '📧 *อีเมลผู้ส่ง:* ' + (userEmail || 'ไม่ระบุ') + '\\n' +\n  '🆔 *Form ID:* ' + formId + '\\n\\n' +\n  '━━━━━━━━━━━━━━━━━━━━━━\\n' +\n  '*📝 คำตอบ:*\\n' + answersSlack + fileLinksSlack +\n  '━━━━━━━━━━━━━━━━━━━━━━\\n' +\n  '📊 *Response Sheet:* <' + responseSheet + '|ดู Google Sheet>';\n\nreturn [{\n  json: {\n    ...prevData,\n    ...logData,\n    emailMessage: emailMessage,\n    slackMessage: slackMessage\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8240,
+        5424
+      ],
+      "id": "9127a365-40c7-4c75-9c00-8ac8c166c884",
+      "name": "Format Messages with Links"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// Parse answers JSON string\nlet answers = {};\ntry {\n  answers = JSON.parse(item.answers || '{}');\n} catch (e) {\n  answers = {};\n}\n\n// Build output object with base fields first\nconst output = {\n  'Submitted At': item.submittedAt || '',\n  'Form ID': item.formId || '',\n  'Form Title': item.formTitle || ''\n};\n\n// Spread all answer fields as separate columns\nfor (const [key, value] of Object.entries(answers)) {\n  output[key] = value || '';\n}\n\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8032,
+        5232
+      ],
+      "id": "f52faf8b-735d-4bd2-9773-a739e68ec848",
+      "name": "Set Log Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst answers = body.answers || {};\nconst questions = body.questions || [];\n\n// Config from Google Sheets\nconst notifyEmails = body.notify_emails || '';\nconst slackWebhook = body.slack_webhook || '';\nconst responseSheet = body.response_sheet || '';\nconst driveUrl = body.drive_url || '';  // ว่าง = สร้าง subfolder\nconst senderEmail = body.sender_email || 'pantawat@pirsquare.net';  // default sender\nconst senderName = body.sender_name || 'PiR Academy';  // default sender name\n\n// Auto-detect user email\nlet userEmail = '';\nfor (const q of questions) {\n  if (q.type === 'email' && answers[q.id]) {\n    userEmail = answers[q.id];\n    break;\n  }\n}\n\n// Process file fields\nconst fileFields = {};\nconst regularAnswers = {};\n\nfor (const [key, value] of Object.entries(answers)) {\n  if (value && typeof value === 'object' && value.base64) {\n    fileFields[key] = value;\n    regularAnswers[key] = `[FILE: ${value.filename}]`;\n  } else {\n    regularAnswers[key] = value;\n  }\n}\n\n// Format date\nconst submittedAt = body.submitted_at || new Date().toISOString();\nconst formattedDate = new Date(submittedAt).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });\n\n// Format answers for display\nconst answersFormatted = Object.entries(regularAnswers)\n  .map(([key, value]) => `• ${key}: ${value ?? '-'}`)\n  .join('\\n');\n\n// ========== EMAIL FORMAT (HTML) ==========\nconst emailMessage = `\n<div style=\"font-family: Arial, sans-serif; max-width: 600px;\">\n  <h2 style=\"color: #333;\">📋 ฟอร์มใหม่: ${body.form_title || ''}</h2>\n  \n  <table style=\"width: 100%; border-collapse: collapse; margin: 16px 0;\">\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📅 ส่งเมื่อ:</strong></td><td style=\"padding: 8px;\">${formattedDate}</td></tr>\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>📧 อีเมลผู้ส่ง:</strong></td><td style=\"padding: 8px;\">${userEmail || '-'}</td></tr>\n    <tr><td style=\"padding: 8px; background: #f5f5f5;\"><strong>🆔 Form ID:</strong></td><td style=\"padding: 8px;\">${body.form_id || ''}</td></tr>\n  </table>\n\n  <h3>📝 คำตอบ:</h3>\n  <ul style=\"line-height: 1.8;\">\n    ${Object.entries(regularAnswers).map(([k, v]) => `<li><strong>${k}:</strong> ${v ?? '-'}</li>`).join('')}\n  </ul>\n\n  <hr style=\"margin: 20px 0;\">\n  <p>📎 <strong>ไฟล์แนบ:</strong> ${Object.keys(fileFields).length > 0 ? '✅ มี' : '❌ ไม่มี'}</p>\n  <p>📊 <a href=\"${responseSheet}\">ดู Response Sheet</a></p>\n</div>`;\n\n// ========== SLACK FORMAT (Markdown) ==========\nconst slackMessage = `📋 *ฟอร์มใหม่: ${body.form_title || ''}*\n\n━━━━━━━━━━━━━━━━━━━━━━\n📅 *ส่งเมื่อ:* ${formattedDate}\n📧 *อีเมลผู้ส่ง:* ${userEmail || 'ไม่ระบุ'}\n🆔 *Form ID:* ${body.form_id || '-'}\n\n━━━━━━━━━━━━━━━━━━━━━━\n*📝 คำตอบ:*\n${Object.entries(regularAnswers).map(([k, v]) => `• *${k}:* ${v ?? '-'}`).join('\\n')}\n\n━━━━━━━━━━━━━━━━━━━━━━\n📎 *ไฟล์แนบ:* ${Object.keys(fileFields).length > 0 ? '✅ มี' : '❌ ไม่มี'}\n📊 *Response Sheet:* <${responseSheet}|ดู Google Sheet>`;\n\nreturn [{\n  json: {\n    submittedAt: submittedAt,\n    formattedDate: formattedDate,\n    formId: body.form_id || '',\n    formTitle: body.form_title || '',\n    answers: JSON.stringify(regularAnswers, null, 2),\n    notifyEmails: notifyEmails,\n    slackWebhook: slackWebhook,\n    responseSheet: responseSheet,\n    driveUrl: driveUrl,\n    userEmail: userEmail,\n    senderEmail: senderEmail,\n    senderName: senderName,\n    fileFields: fileFields,\n    hasFiles: Object.keys(fileFields).length > 0,\n    // Pre-formatted messages\n    emailMessage: emailMessage,\n    slackMessage: slackMessage\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7472,
+        5216
+      ],
+      "id": "3e618ab4-76c8-44fc-87b3-7a38d50c78fa",
+      "name": "Format Form Submission"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pir/form/submit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        7248,
+        5216
+      ],
+      "id": "ab30ebfc-d008-4762-98b1-0286469e4ea4",
+      "name": "Submit Webhook",
+      "webhookId": "consent-submit-webhook"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"error\": \"Form not found\",\n  \"message\": \"The requested form ID does not exist\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7920,
+        4512
+      ],
+      "id": "758fe5db-2e1d-49b4-b436-b161b5760a74",
+      "name": "Form Not Found"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// Parse the form definition JSON from Google Sheets\nconst formDefinition = item['form definition'];\n\n// Get additional config from Google Sheets columns\nconst logoUrl = item['logo url'] || '';\nconst successUrl = item['success url'] || '';\nconst responseSheet = item['response sheet'] || '';\nconst slackWebhook = item['slackWebhook'] || '';\nconst notifyEmails = item['notify emails'] || '';\nconst formMode = item['form mode'] || 'single';\nconst driveUrl = item['drive url'] || '';  // ว่าง = สร้าง subfolder\nconst senderEmail = item['sender_email'] || 'pantawat@pirsquare.net';  // default sender\nconst senderName = item['sender_name'] || 'PiR Academy';  // default sender name\n\ntry {\n  let parsed = JSON.parse(formDefinition);\n  \n  // If wrapped in 'json' key (Firecrawl format), unwrap it\n  if (parsed.json && parsed.json.questions) {\n    parsed = parsed.json;\n  }\n  \n  // Build config object\n  const config = {\n    logoUrl: logoUrl || parsed.logoUrl || '',\n    successUrl: successUrl || parsed.successUrl || '',\n    responseSheet,\n    slackWebhook,\n    notifyEmails,\n    formMode,\n    driveUrl,\n    senderEmail,\n    senderName\n  };\n  \n  // Check if it's Firecrawl format with meta/fields\n  if (parsed.meta && parsed.fields) {\n    const questions = parsed.fields.map(field => {\n      const q = { id: field.name, type: field.type, label: field.label, required: field.required || false };\n      if (field.config) {\n        if (field.config.placeholder) q.placeholder = field.config.placeholder;\n        if (field.config.description) q.description = field.config.description;\n        if (field.config.options) q.options = field.config.options.map(opt => typeof opt === 'string' ? opt : opt.label);\n        if (field.config.accept_types) q.accept = field.config.accept_types;\n        if (field.config.max_file_size_mb) q.maxSize = field.config.max_file_size_mb;\n      }\n      if (q.type === 'number') q.type = 'text';\n      return q;\n    });\n    return [{ json: { title: parsed.meta.title || 'Untitled', description: parsed.meta.description || '', questions, ...config } }];\n  }\n  \n  // Standard format\n  return [{ json: { title: parsed.title || 'Untitled', description: parsed.description || '', questions: parsed.questions || [], ...config } }];\n} catch (e) {\n  return [{ json: { error: 'Invalid form definition', message: e.message } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7920,
+        4320
+      ],
+      "id": "74b7dad3-6e28-4869-88ed-f469b2e99823",
+      "name": "Parse Form Definition"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pir/form",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        7248,
+        4416
+      ],
+      "id": "d5a3ea91-9a66-43d1-a841-d2a8da14d61a",
+      "name": "Fetch Webhook",
+      "webhookId": "a77cbad6-c136-46f1-bd06-d435a94aefa5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b984fe08-59fa-40ff-9707-9eaa257691d1",
+              "leftValue": "={{ $json['form id'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7696,
+        4416
+      ],
+      "id": "a629b3ed-cca8-4f0d-a781-56bde90881af",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg",
+          "mode": "list",
+          "cachedResultName": "[POOH] Dynamic Form Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Config_Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aQOYO78RwMfB2MUxWc3b1ouONs_lmlKcuvXabKg5XCg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "form id",
+              "lookupValue": "={{ $json.body.form_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7472,
+        4416
+      ],
+      "id": "6ab657d3-84cf-48c3-af56-389bf4dc3609",
+      "name": "get path",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eiXrRmu5i3vrFtp9",
+          "name": "POOH' GOOGLE SHEETS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        8144,
+        4416
+      ],
+      "id": "999dcb18-9b90-4a45-8b43-460534631e03",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Has Files?": {
+      "main": [
+        [
+          {
+            "node": "Extract File Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Log Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Drive Link": {
+      "main": [
+        [
+          {
+            "node": "Set Log Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Create Drive Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use Created Folder": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Subfolder": {
+      "main": [
+        [
+          {
+            "node": "Use Created Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use Existing Folder": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Folder Exists?": {
+      "main": [
+        [
+          {
+            "node": "Use Existing Folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Subfolder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Folder": {
+      "main": [
+        [
+          {
+            "node": "Folder Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Subfolder?": {
+      "main": [
+        [
+          {
+            "node": "Search Folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract File Data": {
+      "main": [
+        [
+          {
+            "node": "Need Subfolder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Messages with Links": {
+      "main": [
+        [
+          {
+            "node": "Send Admin Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send User Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Send to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Log Fields": {
+      "main": [
+        [
+          {
+            "node": "Append to Log",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Format Messages with Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Form Submission": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Files?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Form Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Not Found": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Form Definition": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Webhook": {
+      "main": [
+        [
+          {
+            "node": "get path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Parse Form Definition",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Form Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get path": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4a432d8839f73c04d1c52b619739b20deb63b823fc0c91805299f612d5b8100"
+  }
+}

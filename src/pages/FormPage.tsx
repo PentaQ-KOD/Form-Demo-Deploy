@@ -35,6 +35,8 @@ interface FormConfig {
     responseSheet?: string;
     formMode?: 'single' | 'quiz';
     driveUrl?: string;  // Google Drive folder URL for file uploads
+    senderEmail?: string;  // Email address for sender
+    senderName?: string;   // Display name for sender
 }
 
 type FormState = "loading" | "error" | "form" | "submitting" | "thankyou";
@@ -389,6 +391,8 @@ export default function FormPage() {
                 slack_webhook: formConfig.slackWebhook || '', // Slack webhook
                 response_sheet: formConfig.responseSheet || '', // Response sheet URL
                 drive_url: formConfig.driveUrl || '', // Google Drive folder URL
+                sender_email: formConfig.senderEmail || '', // Sender email address
+                sender_name: formConfig.senderName || '', // Sender display name
                 submitted_at: new Date().toLocaleString('th-TH', {
                     timeZone: 'Asia/Bangkok',
                     year: 'numeric',
@@ -459,9 +463,10 @@ export default function FormPage() {
                                     handleChange(question.id, selectedValue);
                                 }
                             }}
+                            style={{ paddingTop: '12px', paddingBottom: '12px' }}
                             className={cn(
-                                "pir-form-input w-full h-12 md:h-14 px-4 rounded-lg border-2",
-                                "font-bai text-base md:text-lg bg-background",
+                                "pir-form-input w-full h-12 md:h-13 px-4 rounded-lg border-2",
+                                "font-bai text-sm md:text-base bg-background",
                                 "focus:outline-none focus:ring-2 focus:ring-ring",
                                 error ? "border-destructive" : "border-border"
                             )}
@@ -489,8 +494,8 @@ export default function FormPage() {
                                 }}
                                 placeholder="โปรดระบุ..."
                                 className={cn(
-                                    "pir-form-input w-full h-12 md:h-14 px-4 rounded-lg border-2",
-                                    "font-bai text-base md:text-lg bg-background",
+                                    "pir-form-input w-full h-12 md:h-13 px-4 py-3 rounded-lg border-2",
+                                    "font-bai text-sm md:text-base bg-background",
                                     "focus:outline-none focus:ring-2 focus:ring-ring",
                                     "border-border"
                                 )}
@@ -517,8 +522,8 @@ export default function FormPage() {
                             onChange={(e) => handleChange(question.id, e.target.value)}
                             placeholder={question.placeholder}
                             className={cn(
-                                "pir-form-input w-full min-h-[120px] rounded-lg border-2 px-4 py-3",
-                                "font-bai text-base md:text-lg resize-none",
+                                "pir-form-input w-full min-h-[100px] rounded-lg border-2 px-4 py-3",
+                                "font-bai text-sm md:text-base resize-none leading-relaxed",
                                 "focus:outline-none focus:ring-2 focus:ring-ring",
                                 error ? "border-destructive" : "border-border"
                             )}
@@ -533,7 +538,7 @@ export default function FormPage() {
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         placeholder={question.placeholder}
                         className={cn(
-                            "pir-form-input h-12 md:h-14 text-base md:text-lg font-bai",
+                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
                             error && "border-destructive"
                         )}
                     />
@@ -547,7 +552,7 @@ export default function FormPage() {
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         placeholder={question.placeholder || "example@email.com"}
                         className={cn(
-                            "pir-form-input h-12 md:h-14 text-base md:text-lg font-bai",
+                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
                             error && "border-destructive"
                         )}
                     />
@@ -561,7 +566,7 @@ export default function FormPage() {
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         placeholder={question.placeholder || "08x-xxx-xxxx"}
                         className={cn(
-                            "pir-form-input h-12 md:h-14 text-base md:text-lg font-bai",
+                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
                             error && "border-destructive"
                         )}
                     />
@@ -574,7 +579,7 @@ export default function FormPage() {
                         value={typeof value === "string" ? value : ""}
                         onChange={(e) => handleChange(question.id, e.target.value)}
                         className={cn(
-                            "pir-form-input h-12 md:h-14 text-base md:text-lg font-bai",
+                            "pir-form-input h-12 md:h-13 text-sm md:text-base font-bai",
                             error && "border-destructive"
                         )}
                     />
@@ -706,6 +711,39 @@ export default function FormPage() {
             );
         }
 
+        // Extract user's name from form data
+        const getUserName = (): string => {
+            if (!formConfig) return "";
+
+            // Try to find a name field from the questions
+            // Look for questions with labels containing "ชื่อ" or "name" (case insensitive)
+            const nameQuestion = formConfig.questions.find(q =>
+                q.type === "text" &&
+                (q.label.toLowerCase().includes("ชื่อ") ||
+                    q.label.toLowerCase().includes("name"))
+            );
+
+            if (nameQuestion) {
+                const name = formData[nameQuestion.id];
+                if (name && typeof name === "string" && name.trim()) {
+                    return name.trim();
+                }
+            }
+
+            // If no specific name field found, try the first text question
+            const firstTextQuestion = formConfig.questions.find(q => q.type === "text");
+            if (firstTextQuestion) {
+                const name = formData[firstTextQuestion.id];
+                if (name && typeof name === "string" && name.trim()) {
+                    return name.trim();
+                }
+            }
+
+            return "";
+        };
+
+        const userName = getUserName();
+
         return (
             <div className="pir-form-container">
                 <div className="flex items-center justify-center min-h-screen py-8 px-4">
@@ -739,7 +777,7 @@ export default function FormPage() {
                         {/* Success Message */}
                         <div className="space-y-2">
                             <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground">
-                                ส่งข้อมูลเรียบร้อยแล้ว!
+                                {userName ? `ขอบคุณ คุณ${userName}` : "ส่งข้อมูลเรียบร้อยแล้ว!"}
                             </h2>
                             <p className="text-muted-foreground font-bai">
                                 เราได้รับข้อมูลของคุณแล้ว และจะติดต่อกลับโดยเร็วที่สุด
@@ -803,16 +841,6 @@ export default function FormPage() {
                 <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
                     {/* Header */}
                     <div className="p-6 md:p-8 border-b border-border/50">
-                        {/* Logo */}
-                        {formConfig.logoUrl && (
-                            <div className="flex justify-center mb-6">
-                                <img
-                                    src={formConfig.logoUrl}
-                                    alt="Logo"
-                                    className="h-10 md:h-12 object-contain"
-                                />
-                            </div>
-                        )}
                         <h1 className="text-xl md:text-2xl font-bold font-bai text-foreground text-center">
                             {formConfig.title}
                         </h1>
@@ -877,7 +905,7 @@ export default function FormPage() {
                                             <h2 className="text-lg md:text-xl font-medium font-bai text-foreground flex items-center gap-2">
                                                 {question.label}
                                                 {question.required && (
-                                                    <span className="text-xs text-destructive font-normal">*</span>
+                                                    <span className="text-xs text-destructive font-normal">(จำเป็น)</span>
                                                 )}
                                             </h2>
                                             {question.description && (
@@ -957,7 +985,7 @@ export default function FormPage() {
                                         <h2 className="text-base md:text-lg font-medium font-bai text-foreground flex items-center gap-2">
                                             {question.label}
                                             {question.required && (
-                                                <span className="text-xs text-destructive font-normal">*</span>
+                                                <span className="text-xs text-destructive font-normal">(จำเป็น)</span>
                                             )}
                                         </h2>
                                         {question.description && (
@@ -996,6 +1024,19 @@ export default function FormPage() {
                     )}
                 </div>
             </div>
+
+            {/* Floating Logo - Bottom Left */}
+            {formConfig.logoUrl && (
+                <div className="fixed bottom-4 left-4 z-50">
+                    <div className="bg-card rounded-lg shadow-lg p-3 hover:shadow-xl transition-shadow duration-300">
+                        <img
+                            src={formConfig.logoUrl}
+                            alt="Logo"
+                            className="h-8 md:h-10 object-contain"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
