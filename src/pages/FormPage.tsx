@@ -30,6 +30,7 @@ interface FormConfig {
     description: string;
     questions: Question[];
     logoUrl?: string;
+    logos?: string[]; // Support for multiple logos
     successUrl?: string;
     notifyEmails?: string;
     slackChannel?: string;
@@ -900,6 +901,19 @@ export default function FormPage() {
                 <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
                     {/* Header */}
                     <div className="p-6 md:p-8 border-b border-border">
+                        {/* Header Logos */}
+                        {formConfig.logos && formConfig.logos.length > 0 && (
+                            <div className="flex justify-center items-center gap-6 mb-6">
+                                {formConfig.logos.map((url, index) => (
+                                    <img
+                                        key={index}
+                                        src={url}
+                                        alt={`Header Logo ${index + 1}`}
+                                        className="h-12 md:h-16 object-contain"
+                                    />
+                                ))}
+                            </div>
+                        )}
                         <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-center leading-tight">
                             {formConfig.title}
                         </h1>
@@ -1088,6 +1102,7 @@ export default function FormPage() {
                 </div>
             </div>
 
+            {/* Floating Logo - Bottom Left */}
             {/* Floating Logo - Bottom Left */}
             {formConfig.logoUrl && (
                 <div className="fixed bottom-4 left-4 z-50">
