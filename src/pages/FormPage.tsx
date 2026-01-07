@@ -30,7 +30,7 @@ interface FormConfig {
     description: string;
     questions: Question[];
     logoUrl?: string;
-    logos?: string[]; // Support for multiple logos
+    logos?: (string | { url: string; height?: number | string })[]; // Support for multiple logos with optional custom height
     successUrl?: string;
     notifyEmails?: string;
     slackChannel?: string;
@@ -904,15 +904,24 @@ export default function FormPage() {
                         {/* Header Logos */}
                         {formConfig.logos && formConfig.logos.length > 0 && (
                             <div className="flex justify-center items-center gap-8 mb-6">
-                                {formConfig.logos.map((url, index) => (
-                                    <img
-                                        key={index}
-                                        src={url}
-                                        alt={`Header Logo ${index + 1}`}
-                                        style={{ height: '100px' }}
-                                        className="object-contain"
-                                    />
-                                ))}
+                                {formConfig.logos.map((logo, index) => {
+                                    const url = typeof logo === 'string' ? logo : logo.url;
+                                    // Default height is 100px if not specified
+                                    let height = '100px';
+                                    if (typeof logo !== 'string' && logo.height) {
+                                        height = typeof logo.height === 'number' ? `${logo.height}px` : logo.height;
+                                    }
+
+                                    return (
+                                        <img
+                                            key={index}
+                                            src={url}
+                                            alt={`Header Logo ${index + 1}`}
+                                            style={{ height }}
+                                            className="object-contain"
+                                        />
+                                    );
+                                })}
                             </div>
                         )}
                         <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-center leading-tight">
