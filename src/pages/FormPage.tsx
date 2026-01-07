@@ -10,7 +10,7 @@ import { toast } from "sonner";
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image";
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent";
     label: string;
     description?: string;
     required?: boolean;
@@ -36,8 +36,7 @@ interface FormConfig {
     responseSheet?: string;
     formMode?: 'single' | 'quiz';
     driveUrl?: string;  // Google Drive folder URL for file uploads
-    senderEmail?: string;  // Email address for sender
-    senderName?: string;   // Display name for sender
+    emailCredential?: string;  // Email credential identifier (e.g., "pooh", "pir")
 }
 
 type FormState = "loading" | "error" | "form" | "submitting" | "thankyou";
@@ -51,7 +50,7 @@ export default function FormPage() {
 
     const [formState, setFormState] = useState<FormState>("loading");
     const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
-    const [formData, setFormData] = useState<Record<string, string | string[] | number | File | null>>({});
+    const [formData, setFormData] = useState<Record<string, string | string[] | number | File | null | boolean>>({});
     const [errorMessage, setErrorMessage] = useState("");
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -100,7 +99,7 @@ export default function FormPage() {
             });
 
             // Initialize form data
-            const initialData: Record<string, string | string[] | number | File | null> = {};
+            const initialData: Record<string, string | string[] | number | File | null | boolean> = {};
             data.questions.forEach((q: Question) => {
                 if (q.type === "choices" && q.multiple) {
                     initialData[q.id] = [];
@@ -108,6 +107,8 @@ export default function FormPage() {
                     initialData[q.id] = 0;
                 } else if (q.type === "file") {
                     initialData[q.id] = null;
+                } else if (q.type === "consent") {
+                    initialData[q.id] = false;
                 } else {
                     initialData[q.id] = "";
                 }
@@ -135,7 +136,7 @@ export default function FormPage() {
     }, [formConfig?.title]);
 
     // Handle input change with real-time validation
-    const handleChange = (questionId: string, value: string | string[] | number | File | null) => {
+    const handleChange = (questionId: string, value: string | string[] | number | File | null | boolean) => {
         setFormData((prev) => ({ ...prev, [questionId]: value }));
 
         // Real-time validation for email and phone
@@ -235,6 +236,10 @@ export default function FormPage() {
             } else if (question.type === "file") {
                 if (!value) {
                     return "กรุณาอัปโหลดไฟล์";
+                }
+            } else if (question.type === "consent") {
+                if (value !== true) {
+                    return "กรุณายอมรับข้อตกลง";
                 }
             } else {
                 if (!value || value === "") {
@@ -392,8 +397,7 @@ export default function FormPage() {
                 slack_channel: formConfig.slackChannel || '', // Slack channel
                 response_sheet: formConfig.responseSheet || '', // Response sheet URL
                 drive_url: formConfig.driveUrl || '', // Google Drive folder URL
-                sender_email: formConfig.senderEmail || '', // Sender email address
-                sender_name: formConfig.senderName || '', // Sender display name
+                email_credential: formConfig.emailCredential || '', // Email credential identifier
                 submitted_at: new Date().toLocaleString('th-TH', {
                     timeZone: 'Asia/Bangkok',
                     year: 'numeric',
@@ -651,6 +655,39 @@ export default function FormPage() {
                         />
                     </div>
                 );
+
+            case "consent":
+                // Consent checkbox
+                const isChecked = value === true;
+                return (
+                    <div className="flex items-start gap-3">
+                        <button
+                            type="button"
+                            onClick={() => handleChange(question.id, !isChecked)}
+                            className={cn(
+                                "flex-shrink-0 w-5 h-5 rounded border-2 transition-all duration-200",
+                                "flex items-center justify-center mt-0.5",
+                                isChecked
+                                    ? "bg-primary border-primary"
+                                    : "bg-background border-muted-foreground/30 hover:border-muted-foreground/50",
+                                error && "border-destructive"
+                            )}
+                            aria-checked={isChecked}
+                            role="checkbox"
+                        >
+                            {isChecked && (
+                                <Check className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={3} />
+                            )}
+                        </button>
+                        <label
+                            onClick={() => handleChange(question.id, !isChecked)}
+                            className="text-sm md:text-base font-bai cursor-pointer select-none leading-relaxed"
+                        >
+                            {question.label}
+                        </label>
+                    </div>
+                );
+
 
             default:
                 return null;

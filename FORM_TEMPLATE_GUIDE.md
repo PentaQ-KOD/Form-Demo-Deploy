@@ -94,7 +94,18 @@
 }
 ```
 
-### 8. File Upload Field
+### 8. Consent Checkbox Field
+```json
+{
+  "id": "consent_field",
+  "type": "consent",
+  "label": "ฉันยอมรับข้อตกลงและเงื่อนไข",
+  "description": "เก็บค่า true/false เท่านั้น",
+  "required": true
+}
+```
+
+### 9. File Upload Field
 ```json
 {
   "id": "file_field",
@@ -112,7 +123,7 @@
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `id` | string | ✅ | รหัสเฉพาะของคำถาม (ต้องไม่ซ้ำกัน) |
-| `type` | string | ✅ | ประเภทของ input (text, email, phone, date, rating, choices, dropdown, file) |
+| `type` | string | ✅ | ประเภทของ input (text, email, phone, date, rating, choices, dropdown, file, consent) |
 | `label` | string | ✅ | ข้อความหัวข้อคำถาม |
 | `description` | string | ❌ | คำอธิบายเพิ่มเติม |
 | `required` | boolean | ✅ | บังคับกรอกหรือไม่ |
