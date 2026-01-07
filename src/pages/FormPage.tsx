@@ -10,7 +10,7 @@ import { toast } from "sonner";
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown";
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image";
     label: string;
     description?: string;
     required?: boolean;
@@ -637,6 +637,18 @@ export default function FormPage() {
                                 </button>
                             </div>
                         )}
+                    </div>
+                );
+
+            case "image":
+                // Display image - no input needed, just visual content
+                return (
+                    <div className="flex justify-center">
+                        <img
+                            src={(question as any).imageUrl || (question as any).url}
+                            alt={(question as any).alt || question.label || "Image"}
+                            className="max-w-full h-auto rounded-lg"
+                        />
                     </div>
                 );
 
