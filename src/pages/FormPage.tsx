@@ -809,28 +809,9 @@ export default function FormPage() {
                 <div className="flex items-center justify-center min-h-screen py-8 px-4">
                     <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 text-center space-y-6">
                         {/* Success Icon */}
-                        <div className="flex justify-center">
-                            <div className="relative">
-                                {/* Decorative wave/hand illustration style */}
-                                <svg
-                                    className="w-20 h-20 text-primary"
-                                    viewBox="0 0 80 80"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M40 10c-2 0-4 1-5 3l-10 25c-1 2 0 4 2 5s4 0 5-2l5-12v35c0 3 2 5 5 5s5-2 5-5V29l5 12c1 2 3 3 5 2s3-3 2-5L49 13c-1-2-3-3-5-3h-4z"
-                                        stroke="currentColor"
-                                        strokeWidth="3"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        fill="none"
-                                    />
-                                    <circle cx="25" cy="20" r="3" fill="#facc15" />
-                                    <circle cx="55" cy="25" r="2" fill="#a855f7" />
-                                    <circle cx="60" cy="50" r="4" fill="#facc15" />
-                                    <circle cx="20" cy="55" r="2" fill="#a855f7" />
-                                </svg>
+                        <div className="flex justify-center mb-6">
+                            <div className="rounded-full bg-green-100 p-6 animate-in zoom-in-50 duration-300">
+                                <Check className="h-20 w-20 text-green-600" strokeWidth={3} />
                             </div>
                         </div>
 
@@ -840,7 +821,7 @@ export default function FormPage() {
                                 {userName ? `ขอบคุณ คุณ${userName}` : "ส่งข้อมูลเรียบร้อยแล้ว!"}
                             </h2>
                             <p className="text-muted-foreground font-bai">
-                                เราได้รับข้อมูลของคุณแล้ว และจะติดต่อกลับโดยเร็วที่สุด
+                                เราได้รับข้อมูลของคุณแล้ว
                             </p>
                         </div>
 
