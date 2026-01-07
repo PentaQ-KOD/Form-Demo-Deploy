@@ -1037,7 +1037,9 @@ export default function FormPage() {
                                         className="space-y-2.5"
                                     >
                                         {/* Label with inline required marker - only show if label exists */}
-                                        {question.label && (
+                                        {/* Label with inline required marker - only show if label exists */}
+                                        {/* For particular types like consent: if no choices provided, the label is used inside the component, so don't show it here to avoid duplication */}
+                                        {question.label && (question.type !== 'consent' || (question.choices && question.choices.length > 0)) && (
                                             <label className="pir-form-label font-bai block">
                                                 <span className="text-base md:text-lg">{question.label}</span>
                                                 {question.required && (
