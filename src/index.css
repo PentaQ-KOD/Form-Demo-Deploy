@@ -180,6 +180,7 @@ All colors MUST be HSL.
 .pir-form-description {
   @apply text-sm md:text-base text-muted-foreground mb-3;
   @apply leading-relaxed;
+  @apply whitespace-pre-line;
 }
 
 /* Input Fields */

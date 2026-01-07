@@ -904,7 +904,7 @@ export default function FormPage() {
                             {formConfig.title}
                         </h1>
                         {formConfig.description && (
-                            <p className="text-muted-foreground font-bai mt-3 text-center text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                            <p className="text-muted-foreground font-bai mt-3 text-center text-base md:text-lg max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
                                 {formConfig.description}
                             </p>
                         )}
