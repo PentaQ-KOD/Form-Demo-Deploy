@@ -903,7 +903,7 @@ export default function FormPage() {
                     <div className="p-6 md:p-8 border-b border-border">
                         {/* Header Logos */}
                         {formConfig.logos && formConfig.logos.length > 0 && (
-                            <div className="flex justify-center items-center gap-8 mb-6">
+                            <div className="flex justify-center items-center gap-8 mb-2">
                                 {formConfig.logos.map((logo, index) => {
                                     const url = typeof logo === 'string' ? logo : logo.url;
                                     // Default height is 100px if not specified
