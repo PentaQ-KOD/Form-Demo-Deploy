@@ -171,7 +171,11 @@ export const ChoiceField = ({
     if (variant === "card") {
         return (
             <div className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className={cn(
+                    "grid gap-3",
+                    options.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+                )}>
+
                     {options.map((option) => {
                         const isOther = otherOption && option === otherOption;
                         const isSelected = isOther
