@@ -659,32 +659,43 @@ export default function FormPage() {
             case "consent":
                 // Consent checkbox
                 const isChecked = value === true;
+                // Use first choice as text if available, otherwise use label
+                const consentText = (question.choices && question.choices.length > 0)
+                    ? question.choices[0]
+                    : question.label;
+
                 return (
-                    <div className="flex items-start gap-3">
+                    <div
+                        onClick={() => handleChange(question.id, !isChecked)}
+                        className={cn(
+                            "flex items-start gap-3 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer hover:bg-muted/30",
+                            isChecked
+                                ? "border-primary bg-primary/5"
+                                : "border-border",
+                            error && "border-destructive bg-destructive/5"
+                        )}
+                    >
                         <button
                             type="button"
-                            onClick={() => handleChange(question.id, !isChecked)}
                             className={cn(
-                                "flex-shrink-0 w-5 h-5 rounded border-2 transition-all duration-200",
+                                "flex-shrink-0 w-6 h-6 rounded border-2 transition-all duration-200",
                                 "flex items-center justify-center mt-0.5",
                                 isChecked
                                     ? "bg-primary border-primary"
-                                    : "bg-background border-muted-foreground/30 hover:border-muted-foreground/50",
-                                error && "border-destructive"
+                                    : "bg-background border-muted-foreground/30",
                             )}
-                            aria-checked={isChecked}
                             role="checkbox"
+                            aria-checked={isChecked}
                         >
                             {isChecked && (
-                                <Check className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={3} />
+                                <Check className="h-4 w-4 text-primary-foreground" strokeWidth={3} />
                             )}
                         </button>
-                        <label
-                            onClick={() => handleChange(question.id, !isChecked)}
-                            className="text-sm md:text-base font-bai cursor-pointer select-none leading-relaxed"
-                        >
-                            {question.label}
-                        </label>
+                        <div className="flex-1">
+                            <label className="text-base font-bai cursor-pointer select-none leading-relaxed text-foreground">
+                                {consentText}
+                            </label>
+                        </div>
                     </div>
                 );
 
