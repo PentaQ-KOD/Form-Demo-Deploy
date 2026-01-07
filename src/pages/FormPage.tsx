@@ -924,7 +924,7 @@ export default function FormPage() {
                                 })}
                             </div>
                         )}
-                        <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-center leading-tight">
+                        <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-center leading-tight whitespace-pre-line">
                             {formConfig.title}
                         </h1>
                         {formConfig.description && (
@@ -1064,7 +1064,7 @@ export default function FormPage() {
                                         {/* Label with inline required marker - only show if label exists */}
                                         {/* For particular types like consent: if no choices provided, the label is used inside the component, so don't show it here to avoid duplication */}
                                         {question.label && (question.type !== 'consent' || (question.choices && question.choices.length > 0)) && (
-                                            <label className="pir-form-label font-bai block">
+                                            <label className="pir-form-label font-bai block whitespace-pre-line">
                                                 <span className="text-base md:text-lg">{question.label}</span>
                                                 {question.required && (
                                                     <span className="text-sm text-destructive font-normal ml-2">(จำเป็น)</span>
