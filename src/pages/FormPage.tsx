@@ -903,13 +903,14 @@ export default function FormPage() {
                     <div className="p-6 md:p-8 border-b border-border">
                         {/* Header Logos */}
                         {formConfig.logos && formConfig.logos.length > 0 && (
-                            <div className="flex justify-center items-center gap-6 mb-6">
+                            <div className="flex justify-center items-center gap-8 mb-6">
                                 {formConfig.logos.map((url, index) => (
                                     <img
                                         key={index}
                                         src={url}
                                         alt={`Header Logo ${index + 1}`}
-                                        className="h-12 md:h-16 object-contain"
+                                        style={{ height: '100px' }}
+                                        className="object-contain"
                                     />
                                 ))}
                             </div>
