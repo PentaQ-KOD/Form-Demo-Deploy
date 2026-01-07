@@ -817,8 +817,14 @@ export default function FormPage() {
 
                         {/* Success Message */}
                         <div className="space-y-2">
-                            <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-balance break-words">
-                                {userName ? `ขอบคุณ คุณ${userName}` : "ส่งข้อมูลเรียบร้อยแล้ว!"}
+                            <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-balance break-words leading-tight">
+                                {userName ? (
+                                    <>
+                                        ขอบคุณ <span className="inline-block">คุณ{userName}</span>
+                                    </>
+                                ) : (
+                                    "ส่งข้อมูลเรียบร้อยแล้ว!"
+                                )}
                             </h2>
                             <p className="text-muted-foreground font-bai">
                                 เราได้รับข้อมูลของคุณแล้ว
