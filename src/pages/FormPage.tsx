@@ -990,10 +990,10 @@ export default function FormPage() {
                                     >
                                         {/* Label with inline required marker - only show if label exists */}
                                         {question.label && (
-                                            <label className="pir-form-label font-bai flex items-baseline gap-2">
+                                            <label className="pir-form-label font-bai block">
                                                 <span className="text-base md:text-lg">{question.label}</span>
                                                 {question.required && (
-                                                    <span className="text-sm text-destructive font-normal">(จำเป็น)</span>
+                                                    <span className="text-sm text-destructive font-normal ml-2">(จำเป็น)</span>
                                                 )}
                                             </label>
                                         )}
