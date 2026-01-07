@@ -817,7 +817,7 @@ export default function FormPage() {
 
                         {/* Success Message */}
                         <div className="space-y-2">
-                            <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground">
+                            <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-balance break-words">
                                 {userName ? `ขอบคุณ คุณ${userName}` : "ส่งข้อมูลเรียบร้อยแล้ว!"}
                             </h2>
                             <p className="text-muted-foreground font-bai">
@@ -835,13 +835,13 @@ export default function FormPage() {
                         </div>
 
                         {/* Action Button */}
-                        <Button
+                        {/*<Button
                             onClick={() => navigate("/")}
                             variant="outline"
                             className="font-bai px-6 py-2 rounded-full border-2 hover:bg-primary hover:text-primary-foreground transition-colors"
                         >
                             กลับหน้าหลัก
-                        </Button>
+                        </Button>*/}
                     </div>
                 </div>
             </div>
