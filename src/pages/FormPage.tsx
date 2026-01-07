@@ -435,6 +435,7 @@ export default function FormPage() {
                         value={value as string | string[]}
                         onChange={(v) => handleChange(question.id, v)}
                         multiple={question.multiple}
+                        variant={(question as any).variant || "default"}
                     />
                 );
 
@@ -975,13 +976,15 @@ export default function FormPage() {
                                         id={`question-${question.id}`}
                                         className="space-y-2.5"
                                     >
-                                        {/* Label with inline required marker */}
-                                        <label className="pir-form-label font-bai flex items-baseline gap-2">
-                                            <span className="text-base md:text-lg">{index + 1}. {question.label}</span>
-                                            {question.required && (
-                                                <span className="text-sm text-destructive font-normal">(จำเป็น)</span>
-                                            )}
-                                        </label>
+                                        {/* Label with inline required marker - only show if label exists */}
+                                        {question.label && (
+                                            <label className="pir-form-label font-bai flex items-baseline gap-2">
+                                                <span className="text-base md:text-lg">{question.label}</span>
+                                                {question.required && (
+                                                    <span className="text-sm text-destructive font-normal">(จำเป็น)</span>
+                                                )}
+                                            </label>
+                                        )}
 
                                         {/* Description */}
                                         {question.description && (
