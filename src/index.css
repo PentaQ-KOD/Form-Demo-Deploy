@@ -185,10 +185,23 @@ All colors MUST be HSL.
 
 /* Input Fields */
 .pir-form-input {
-  @apply h-10 px-3 py-2 text-sm;
+  @apply w-full px-3 text-sm;
   @apply bg-white border border-input rounded-md;
   @apply transition-colors duration-200;
   @apply placeholder:text-muted-foreground/60;
+  @apply font-bai;
+  @apply focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20;
+  @apply disabled:cursor-not-allowed disabled:opacity-50;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+  line-height: initial;
+  text-align: start;
+  font-weight: 200;
+  font-style: normal;
+  font-stretch: normal;
+  font-optical-sizing: auto;
+  transition-property: opacity, transform;
+  transition-duration: 350ms;
 }
 
 .pir-form-input:focus {

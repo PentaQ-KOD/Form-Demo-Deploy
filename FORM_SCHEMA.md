@@ -15,6 +15,7 @@ https://your-domain.com/form/{form_id}
 | Column | Description |
 |--------|-------------|
 | `form id` | Unique identifier for the form (used in URL) |
+| `form mode` | Display mode: `"single"` (step-by-step, one question at a time) or `"full-page"` (all questions on one page). Default: `"single"` |
 | `form definition` | JSON configuration for the form |
 
 ---

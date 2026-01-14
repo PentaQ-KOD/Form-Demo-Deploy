@@ -6,7 +6,7 @@ A dynamic, web-based form builder powered by Google Sheets and n8n webhooks. Cre
 
 - **Dynamic Form Loading**: Forms configured in Google Sheets, no code deployment needed
 - **Multiple Question Types**: Text, Email, Phone, Choices, Dropdown, Rating, Date, File Upload
-- **Form Modes**: Single-page or Quiz mode (one question at a time)
+- **Form Modes**: Single (step-by-step) or Full-page (all questions at once)
 - **Real-time Validation**: Email and Thai phone number validation
 - **File Uploads**: Direct upload to Google Drive with Base64 encoding
 - **Email Notifications**: Dual notifications (admin + user) with dynamic sender
@@ -63,7 +63,7 @@ VITE_SUBMIT_URL=https://your-n8n-domain.com/webhook/pir/submit
    - `form title`: Display title
    - `form description`: Optional description
    - `form definition`: JSON with questions array
-   - `form mode`: "single" or "quiz"
+   - `form mode`: "single" (step-by-step, one at a time) or "full-page" (all questions on one page)
    - `logo url`: Optional logo
    - `success url`: Optional redirect after submission
    - `notify emails`: Admin notification emails (comma-separated)

@@ -6,23 +6,37 @@ import { RefreshCw, AlertCircle, Check, Upload, X, ChevronLeft, ChevronRight } f
 import { StarRating, ChoiceField } from "@/components/form";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent";
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider";
     label: string;
     description?: string;
     required?: boolean;
     placeholder?: string;
     options?: string[];
     choices?: string[]; // Alternative to options (for compatibility)
-    multiple?: boolean;
+    multiple?: boolean; // For choices (multiple selection) and file (multiple file upload)
     multiline?: boolean;
     maxRating?: number;
     accept?: string;
     maxSize?: number;
     fullWidth?: boolean; // If true, question spans full width in 2-column layout
+    // Slider properties
+    min?: number;
+    max?: number;
+    step?: number;
+    section?: string; // Section header to group questions
+}
+
+interface SuccessPageConfig {
+    title?: string;  // Custom title (supports markdown)
+    message?: string;  // Custom message (supports markdown)
+    showIcon?: boolean;  // Whether to show the checkmark icon (default: true)
+    iconColor?: string;  // Icon color (default: "green")
 }
 
 interface FormConfig {
@@ -32,10 +46,11 @@ interface FormConfig {
     logoUrl?: string;
     logos?: (string | { url: string; height?: number | string })[]; // Support for multiple logos with optional custom height
     successUrl?: string;
+    successPage?: SuccessPageConfig;  // Custom success page configuration
     notifyEmails?: string;
     slackChannel?: string;
     responseSheet?: string;
-    formMode?: 'single' | 'quiz';
+    formMode?: 'single' | 'full-page';
     driveUrl?: string;  // Google Drive folder URL for file uploads
     emailCredential?: string;  // Email credential identifier (e.g., "pooh", "pir")
 }
@@ -51,7 +66,7 @@ export default function FormPage() {
 
     const [formState, setFormState] = useState<FormState>("loading");
     const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
-    const [formData, setFormData] = useState<Record<string, string | string[] | number | File | null | boolean>>({});
+    const [formData, setFormData] = useState<Record<string, string | string[] | number | File | File[] | null | boolean>>({});
     const [errorMessage, setErrorMessage] = useState("");
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -89,7 +104,9 @@ export default function FormPage() {
 
             // Normalize formMode from n8n (handles "form mode" key and case-insensitive values)
             const rawFormMode = data.formMode || data['form mode'] || '';
-            const normalizedFormMode = rawFormMode.toLowerCase() === 'quiz' ? 'quiz' : 'single';
+            const normalizedFormMode = rawFormMode.toLowerCase() === 'full-page' || rawFormMode.toLowerCase() === 'fullpage'
+                ? 'full-page'
+                : 'single'; // Default to 'single' (step-by-step mode)
 
             console.log('[FormPage] Raw form mode:', rawFormMode, '| Normalized:', normalizedFormMode);
             console.log('[FormPage] Full data from n8n:', data);
@@ -100,16 +117,19 @@ export default function FormPage() {
             });
 
             // Initialize form data
-            const initialData: Record<string, string | string[] | number | File | null | boolean> = {};
+            const initialData: Record<string, string | string[] | number | File | File[] | null | boolean> = {};
             data.questions.forEach((q: Question) => {
                 if (q.type === "choices" && q.multiple) {
                     initialData[q.id] = [];
                 } else if (q.type === "rating") {
                     initialData[q.id] = 0;
                 } else if (q.type === "file") {
-                    initialData[q.id] = null;
+                    // Support multiple file uploads
+                    initialData[q.id] = q.multiple ? [] : null;
                 } else if (q.type === "consent") {
                     initialData[q.id] = false;
+                } else if (q.type === "slider") {
+                    initialData[q.id] = q.min || 0;
                 } else {
                     initialData[q.id] = "";
                 }
@@ -137,7 +157,7 @@ export default function FormPage() {
     }, [formConfig?.title]);
 
     // Handle input change with real-time validation
-    const handleChange = (questionId: string, value: string | string[] | number | File | null | boolean) => {
+    const handleChange = (questionId: string, value: string | string[] | number | File | File[] | null | boolean) => {
         setFormData((prev) => ({ ...prev, [questionId]: value }));
 
         // Real-time validation for email and phone
@@ -235,12 +255,22 @@ export default function FormPage() {
                     return "กรุณาให้คะแนน";
                 }
             } else if (question.type === "file") {
-                if (!value) {
-                    return "กรุณาอัปโหลดไฟล์";
+                if (question.multiple) {
+                    if (!Array.isArray(value) || value.length === 0) {
+                        return "กรุณาอัปโหลดไฟล์อย่างน้อย 1 ไฟล์";
+                    }
+                } else {
+                    if (!value) {
+                        return "กรุณาอัปโหลดไฟล์";
+                    }
                 }
             } else if (question.type === "consent") {
                 if (value !== true) {
                     return "กรุณายอมรับข้อตกลง";
+                }
+            } else if (question.type === "slider") {
+                if (typeof value !== "number") {
+                    return "กรุณาปรับค่า";
                 }
             } else {
                 if (!value || value === "") {
@@ -384,6 +414,20 @@ export default function FormPage() {
                         size: value.size,
                         base64: base64
                     };
+                } else if (Array.isArray(value) && value.length > 0 && value[0] instanceof File) {
+                    // Handle multiple files
+                    const filesData = await Promise.all(
+                        (value as File[]).map(async (file: File) => {
+                            const base64 = await fileToBase64(file);
+                            return {
+                                filename: file.name,
+                                mimeType: file.type,
+                                size: file.size,
+                                base64: base64
+                            };
+                        })
+                    );
+                    answers[key] = filesData;
                 } else {
                     answers[key] = value;
                 }
@@ -470,7 +514,6 @@ export default function FormPage() {
                                     handleChange(question.id, selectedValue);
                                 }
                             }}
-                            style={{ paddingTop: '12px', paddingBottom: '12px' }}
                             className={cn(
                                 "pir-form-input w-full font-bai",
                                 error && "ring-1 ring-destructive"
@@ -522,7 +565,7 @@ export default function FormPage() {
                             onChange={(e) => handleChange(question.id, e.target.value)}
                             placeholder={question.placeholder}
                             className={cn(
-                                "pir-form-input w-full min-h-[80px] font-bai resize-none leading-relaxed",
+                                "pir-form-input w-full min-h-[80px] font-bai resize-none",
                                 error && "ring-1 ring-destructive"
                             )}
                             rows={3}
@@ -584,7 +627,11 @@ export default function FormPage() {
                 );
 
             case "file":
-                const file = value instanceof File ? value : null;
+                // Support both single and multiple file uploads
+                const files = question.multiple
+                    ? (Array.isArray(value) ? value as File[] : [])
+                    : (value instanceof File ? [value] : []);
+
                 return (
                     <div className="space-y-2">
                         <label
@@ -598,7 +645,9 @@ export default function FormPage() {
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
                                 <p className="text-sm text-muted-foreground font-bai">
-                                    คลิกเพื่ออัปโหลดไฟล์
+                                    {question.multiple
+                                        ? "คลิกเพื่ออัปโหลดไฟล์ (หลายไฟล์)"
+                                        : "คลิกเพื่ออัปโหลดไฟล์"}
                                 </p>
                                 {question.accept && (
                                     <p className="text-xs text-muted-foreground/70 mt-1">
@@ -607,7 +656,7 @@ export default function FormPage() {
                                 )}
                                 {question.maxSize && (
                                     <p className="text-xs text-muted-foreground/70">
-                                        ขนาดสูงสุด: {question.maxSize}MB
+                                        ขนาดสูงสุด: {question.maxSize}MB {question.multiple ? "ต่อไฟล์" : ""}
                                     </p>
                                 )}
                             </div>
@@ -615,33 +664,100 @@ export default function FormPage() {
                                 type="file"
                                 className="hidden"
                                 accept={question.accept}
+                                multiple={question.multiple}
                                 onChange={(e) => {
-                                    const selectedFile = e.target.files?.[0] || null;
-                                    if (selectedFile && question.maxSize) {
+                                    const selectedFiles = Array.from(e.target.files || []);
+
+                                    // Validate file sizes
+                                    if (question.maxSize) {
                                         const maxBytes = question.maxSize * 1024 * 1024;
-                                        if (selectedFile.size > maxBytes) {
-                                            toast.error(`ไฟล์มีขนาดเกิน ${question.maxSize}MB`);
+                                        const oversizedFile = selectedFiles.find(f => f.size > maxBytes);
+                                        if (oversizedFile) {
+                                            toast.error(`ไฟล์ ${oversizedFile.name} มีขนาดเกิน ${question.maxSize}MB`);
                                             return;
                                         }
                                     }
-                                    handleChange(question.id, selectedFile);
+
+                                    if (question.multiple) {
+                                        // Add to existing files
+                                        const currentFiles = Array.isArray(value) ? value as File[] : [];
+                                        handleChange(question.id, [...currentFiles, ...selectedFiles]);
+                                    } else {
+                                        handleChange(question.id, selectedFiles[0] || null);
+                                    }
+
+                                    // Reset input so same file can be selected again
+                                    e.target.value = '';
                                 }}
                             />
                         </label>
-                        {file && (
-                            <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                                <span className="text-sm font-bai flex-1 truncate">
-                                    {file.name}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => handleChange(question.id, null)}
-                                    className="p-1 hover:bg-destructive/20 rounded"
-                                >
-                                    <X className="h-4 w-4 text-destructive" />
-                                </button>
+                        {files.length > 0 && (
+                            <div className="space-y-2">
+                                {files.map((file, index) => (
+                                    <div key={`${file.name}-${index}`} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                                        <span className="text-sm font-bai flex-1 truncate">
+                                            {file.name}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {(file.size / 1024).toFixed(1)}KB
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (question.multiple) {
+                                                    const newFiles = files.filter((_, i) => i !== index);
+                                                    handleChange(question.id, newFiles.length > 0 ? newFiles : []);
+                                                } else {
+                                                    handleChange(question.id, null);
+                                                }
+                                            }}
+                                            className="p-1 hover:bg-destructive/20 rounded"
+                                        >
+                                            <X className="h-4 w-4 text-destructive" />
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
                         )}
+                    </div>
+                );
+
+            case "slider":
+                const sliderValue = typeof value === "number" ? value : (question.min || 0);
+                const sliderMin = question.min || 0;
+                const sliderMax = question.max || 100;
+                const sliderStep = question.step || 1;
+
+                return (
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground font-bai">{sliderMin}</span>
+                            <span className="text-lg font-semibold font-bai text-primary">{sliderValue}</span>
+                            <span className="text-sm text-muted-foreground font-bai">{sliderMax}</span>
+                        </div>
+                        <input
+                            type="range"
+                            min={sliderMin}
+                            max={sliderMax}
+                            step={sliderStep}
+                            value={sliderValue}
+                            onChange={(e) => handleChange(question.id, Number(e.target.value))}
+                            className={cn(
+                                "w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer",
+                                "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5",
+                                "[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary",
+                                "[&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all",
+                                "[&::-webkit-slider-thumb]:hover:scale-110",
+                                "[&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full",
+                                "[&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0",
+                                "[&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:transition-all",
+                                "[&::-moz-range-thumb]:hover:scale-110",
+                                error && "bg-destructive/20"
+                            )}
+                            style={{
+                                background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((sliderValue - sliderMin) / (sliderMax - sliderMin)) * 100}%, hsl(var(--muted)) ${((sliderValue - sliderMin) / (sliderMax - sliderMin)) * 100}%, hsl(var(--muted)) 100%)`
+                            }}
+                        />
                     </div>
                 );
 
@@ -765,7 +881,11 @@ export default function FormPage() {
             );
         }
 
-        // Extract user's name from form data
+        // Check if custom success page is configured
+        const successPageConfig = formConfig?.successPage;
+        const hasCustomConfig = successPageConfig && (successPageConfig.title || successPageConfig.message);
+
+        // Extract user's name from form data (for default page)
         const getUserName = (): string => {
             if (!formConfig) return "";
 
@@ -804,41 +924,90 @@ export default function FormPage() {
 
         const userName = getUserName();
 
+        // Default icon settings
+        const showIcon = successPageConfig?.showIcon !== false; // Default to true
+        const iconColor = successPageConfig?.iconColor || "green";
+        const iconBgColor = iconColor === "green" ? "bg-green-100" : `bg-${iconColor}-100`;
+        const iconTextColor = iconColor === "green" ? "text-green-600" : `text-${iconColor}-600`;
+
         return (
             <div className="pir-form-container">
                 <div className="flex items-center justify-center min-h-screen py-8 px-4">
                     <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 text-center space-y-6">
                         {/* Success Icon */}
-                        <div className="flex justify-center mb-6">
-                            <div className="rounded-full bg-green-100 p-6 animate-in zoom-in-50 duration-300">
-                                <Check className="h-20 w-20 text-green-600" strokeWidth={3} />
+                        {showIcon && (
+                            <div className="flex justify-center mb-6">
+                                <div className={cn(
+                                    "rounded-full p-6 animate-in zoom-in-50 duration-300",
+                                    iconBgColor
+                                )}>
+                                    <Check className={cn("h-20 w-20", iconTextColor)} strokeWidth={3} />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        {/* Success Message */}
-                        <div className="space-y-2">
-                            <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-balance break-words leading-tight">
-                                {userName ? (
-                                    <>
-                                        ขอบคุณ <span className="inline-block">คุณ{userName}</span>
-                                    </>
-                                ) : (
-                                    "ส่งข้อมูลเรียบร้อยแล้ว!"
+                        {/* Custom or Default Success Message */}
+                        {hasCustomConfig ? (
+                            // Custom success page with markdown support
+                            <div className="space-y-4">
+                                {successPageConfig.title && (
+                                    <div className="text-2xl md:text-3xl font-bold font-bai text-foreground text-balance break-words leading-tight">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                p: ({ node, ...props }) => <span {...props} />,
+                                                a: ({ node, ...props }) => <a {...props} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" />,
+                                            }}
+                                        >
+                                            {successPageConfig.title}
+                                        </ReactMarkdown>
+                                    </div>
                                 )}
-                            </h2>
-                            <p className="text-muted-foreground font-bai">
-                                เราได้รับข้อมูลของคุณแล้ว
-                            </p>
-                        </div>
+                                {successPageConfig.message && (
+                                    <div className="text-muted-foreground font-bai prose prose-sm max-w-none">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                a: ({ node, ...props }) => <a {...props} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" />,
+                                                ul: ({ node, ...props }) => <ul {...props} className="list-disc list-inside text-left space-y-1" />,
+                                                ol: ({ node, ...props }) => <ol {...props} className="list-decimal list-inside text-left space-y-1" />,
+                                                li: ({ node, ...props }) => <li {...props} className="text-muted-foreground" />,
+                                                p: ({ node, ...props }) => <p {...props} className="mb-2 last:mb-0" />,
+                                            }}
+                                        >
+                                            {successPageConfig.message}
+                                        </ReactMarkdown>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            // Default success page
+                            <>
+                                <div className="space-y-2">
+                                    <h2 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-balance break-words leading-tight">
+                                        {userName ? (
+                                            <>
+                                                ขอบคุณ <span className="inline-block">คุณ{userName}</span>
+                                            </>
+                                        ) : (
+                                            "ส่งข้อมูลเรียบร้อยแล้ว!"
+                                        )}
+                                    </h2>
+                                    <p className="text-muted-foreground font-bai">
+                                        เราได้รับข้อมูลของคุณแล้ว
+                                    </p>
+                                </div>
 
-                        {/* Decorative divider */}
-                        <div className="flex items-center justify-center gap-2 py-2">
-                            <div className="h-1 w-1 rounded-full bg-primary/30" />
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary/50" />
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary/50" />
-                            <div className="h-1 w-1 rounded-full bg-primary/30" />
-                        </div>
+                                {/* Decorative divider */}
+                                <div className="flex items-center justify-center gap-2 py-2">
+                                    <div className="h-1 w-1 rounded-full bg-primary/30" />
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary/50" />
+                                    <div className="h-2 w-2 rounded-full bg-primary" />
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary/50" />
+                                    <div className="h-1 w-1 rounded-full bg-primary/30" />
+                                </div>
+                            </>
+                        )}
 
                         {/* Action Button */}
                         {/*<Button
@@ -920,8 +1089,8 @@ export default function FormPage() {
                             </p>
                         )}
 
-                        {/* Quiz Mode Progress Indicator */}
-                        {formConfig.formMode === 'quiz' && (
+                        {/* Single Mode (Step-by-step) Progress Indicator */}
+                        {formConfig.formMode === 'single' && (
                             <div className="mt-6">
                                 {/* Progress Dots */}
                                 <div className="flex justify-center items-center gap-2">
@@ -954,8 +1123,8 @@ export default function FormPage() {
                         )}
                     </div>
 
-                    {/* Quiz Mode View */}
-                    {formConfig.formMode === 'quiz' ? (
+                    {/* Single Mode (Step-by-step) View */}
+                    {formConfig.formMode === 'single' ? (
                         <div className="p-6 md:p-8">
                             {/* Current Question */}
                             {(() => {
@@ -1037,7 +1206,7 @@ export default function FormPage() {
                             </div>
                         </div>
                     ) : (
-                        /* Single Page Mode (Default) */
+                        /* Full-page Mode (All questions on one page) */
                         <form onSubmit={onFormSubmit} className="p-6 md:p-8">
                             {/* All Questions - Single Column Layout */}
                             <div className="space-y-6">
@@ -1047,6 +1216,16 @@ export default function FormPage() {
                                         id={`question-${question.id}`}
                                         className="space-y-2.5"
                                     >
+                                        {/* Section Header */}
+                                        {(index === 0 || question.section !== formConfig.questions[index - 1].section) && question.section && (
+                                            <div className="pt-4 pb-2">
+                                                <h3 className="text-xl md:text-2xl font-bold font-bai text-primary">
+                                                    {question.section}
+                                                </h3>
+                                                <div className="h-1 w-20 bg-primary/20 rounded-full mt-2" />
+                                            </div>
+                                        )}
+
                                         {/* Label with inline required marker - only show if label exists */}
                                         {/* Label with inline required marker - only show if label exists */}
                                         {/* For particular types like consent: if no choices provided, the label is used inside the component, so don't show it here to avoid duplication */}

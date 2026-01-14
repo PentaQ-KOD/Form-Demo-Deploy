@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const LOGO_URL = "https://pirsquare.net/pir-facebook.png";
+const LOGO_URL = "https://lh3.googleusercontent.com/d/1477-_r60UzCJcOHW9GKzkjBwOvDC7x_0";
 
 interface QuizIdEntryProps {
   isDark: boolean;
@@ -17,7 +17,7 @@ export const QuizIdEntry = ({ isDark }: QuizIdEntryProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (quizId.trim()) {
-      navigate(`/${quizId.trim()}`);
+      navigate(`/form/${quizId.trim()}`);
     }
   };
 
@@ -30,7 +30,7 @@ export const QuizIdEntry = ({ isDark }: QuizIdEntryProps) => {
       <img
         src={LOGO_URL}
         alt="PiR Academy Logo"
-        className="h-12 md:h-16 mb-8"
+        className="h-20 md:h-24 mb-8"
       />
 
       <div className="text-center space-y-4 max-w-md">
