@@ -13,7 +13,7 @@ import remarkGfm from "remark-gfm";
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear";
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear" | "paragraph";
     label: string;
     description?: string;
     required?: boolean;
@@ -146,6 +146,8 @@ export default function FormPage() {
                     const min = q.min || 1;
                     const max = q.max || 5;
                     initialData[q.id] = Math.ceil((min + max) / 2);
+                } else if (q.type === "paragraph") {
+                    initialData[q.id] = "";
                 } else {
                     initialData[q.id] = "";
                 }
@@ -623,7 +625,7 @@ export default function FormPage() {
                         />
                     );
                 }
-                return (
+                return ( // Fallthrough for non-multiline text behaves like normal input (below)
                     <Input
                         type="text"
                         value={typeof value === "string" ? value : ""}
@@ -633,6 +635,20 @@ export default function FormPage() {
                             "pir-form-input font-bai",
                             error && "ring-1 ring-destructive"
                         )}
+                    />
+                );
+
+            case "paragraph":
+                return (
+                    <textarea
+                        value={typeof value === "string" ? value : ""}
+                        onChange={(e) => handleChange(question.id, e.target.value)}
+                        placeholder={question.placeholder}
+                        className={cn(
+                            "pir-form-input w-full min-h-[80px] font-bai resize-none",
+                            error && "ring-1 ring-destructive"
+                        )}
+                        rows={3}
                     />
                 );
 
