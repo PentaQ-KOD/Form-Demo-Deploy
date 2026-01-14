@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertCircle, Check, Upload, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { StarRating, ChoiceField } from "@/components/form";
+import { StarRating, ChoiceField, LinearScale } from "@/components/form";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -13,7 +13,7 @@ import remarkGfm from "remark-gfm";
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider";
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear";
     label: string;
     description?: string;
     required?: boolean;
@@ -31,6 +31,9 @@ interface Question {
     max?: number;
     step?: number;
     section?: string; // Section header to group questions
+    // Linear Scale specific
+    minLabel?: string;
+    maxLabel?: string;
 }
 
 interface SuccessPageConfig {
@@ -136,7 +139,13 @@ export default function FormPage() {
                 } else if (q.type === "consent") {
                     initialData[q.id] = false;
                 } else if (q.type === "slider") {
-                    initialData[q.id] = q.min || 0;
+                    const min = q.min !== undefined ? q.min : 0;
+                    const max = q.max !== undefined ? q.max : 100;
+                    initialData[q.id] = Math.floor((min + max) / 2);
+                } else if (q.type === "linear") {
+                    const min = q.min || 1;
+                    const max = q.max || 5;
+                    initialData[q.id] = Math.ceil((min + max) / 2);
                 } else {
                     initialData[q.id] = "";
                 }
@@ -275,9 +284,14 @@ export default function FormPage() {
                 if (value !== true) {
                     return "กรุณายอมรับข้อตกลง";
                 }
+
             } else if (question.type === "slider") {
                 if (typeof value !== "number") {
                     return "กรุณาปรับค่า";
+                }
+            } else if (question.type === "linear") {
+                if (value === null || value === undefined) {
+                    return "กรุณาเลือกหนึ่งตัวเลือก";
                 }
             } else {
                 if (!value || value === "") {
@@ -853,6 +867,19 @@ export default function FormPage() {
                     </div>
                 );
 
+
+            case "linear":
+                return (
+                    <LinearScale
+                        value={typeof value === "number" ? value : null}
+                        onChange={(v) => handleChange(question.id, v)}
+                        min={question.min || 1}
+                        max={question.max || 5}
+                        minLabel={question.minLabel}
+                        maxLabel={question.maxLabel}
+                        disabled={formState === "submitting"}
+                    />
+                );
 
             default:
                 return null;
