@@ -37,7 +37,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 20%;
 
-    --primary: 262 83% 58%;
+    --primary: 209 60% 34%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 96%;
@@ -46,7 +46,7 @@ All colors MUST be HSL.
     --muted: 220 14% 96%;
     --muted-foreground: 220 10% 46%;
 
-    --accent: 262 83% 58%;
+    --accent: 209 60% 34%;
     --accent-foreground: 0 0% 100%;
 
     --success: 142 76% 36%;
@@ -57,15 +57,15 @@ All colors MUST be HSL.
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 262 83% 58%;
+    --ring: 209 60% 34%;
 
     --radius: 0.75rem;
 
     --quiz-option: 30 10% 95%;
     --quiz-option-hover: 30 10% 92%;
-    --quiz-progress-complete: 262 83% 58%;
+    --quiz-progress-complete: 209 60% 34%;
     --quiz-progress-remaining: 220 13% 91%;
-    --quiz-indicator: 262 83% 58%;
+    --quiz-indicator: 209 60% 34%;
     --quiz-number: 220 10% 75%;
     --quiz-nav-button: 0 0% 37%;
     --quiz-submit-button: 210 17% 98%;
@@ -87,7 +87,7 @@ All colors MUST be HSL.
 
     --sidebar-border: 220 13% 91%;
 
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-ring: 209 60% 34%;
   }
 
   .dark {

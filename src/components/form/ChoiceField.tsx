@@ -14,7 +14,7 @@ interface ChoiceFieldProps {
 }
 
 // Common "other" option variations in Thai
-const OTHER_OPTIONS = ["อื่นๆ", "อื่น ๆ", "อื่นๆ (โปรดระบุ)", "อื่น ๆ (โปรดระบุ)", "other", "Other", "Others", "อื่น"];
+const OTHER_OPTIONS = ["อื่นๆ", "อื่น ๆ", "อื่นๆ (โปรดระบุ)", "อื่น ๆ (โปรดระบุ)", "other", "Other", "Others"];
 
 export const ChoiceField = ({
     options,

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import aiScalingForm from "../../ai-scaling-2026-form.json";
 
 // Question types from Google Sheets schema
 interface Question {
@@ -70,6 +71,7 @@ export default function FormPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
     // Fetch form configuration
     const fetchFormConfig = async () => {
@@ -81,8 +83,51 @@ export default function FormPage() {
 
         setFormState("loading");
         setErrorMessage("");
+        setCurrentQuestionIndex(0);
+        setCurrentSectionIndex(0);
 
         try {
+            // Override for development/testing with local file
+            if (formId === 'ai-scaling-2026' || formId === 'test') {
+                console.log('Using local configuration for ai-scaling-2026');
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const data = aiScalingForm;
+
+                // Normalize formMode
+                const rawFormMode = (data as any).formMode || (data as any)['form mode'] || '';
+                const normalizedFormMode = rawFormMode.toLowerCase() === 'full-page' || rawFormMode.toLowerCase() === 'fullpage'
+                    ? 'full-page'
+                    : 'single';
+
+                setFormConfig({
+                    ...data as any,
+                    formMode: normalizedFormMode
+                });
+
+                // Initialize form data
+                const initialData: Record<string, string | string[] | number | File | File[] | null | boolean> = {};
+                (data.questions as any[]).forEach((q: Question) => {
+                    if (q.type === "choices" && q.multiple) {
+                        initialData[q.id] = [];
+                    } else if (q.type === "rating") {
+                        initialData[q.id] = 0;
+                    } else if (q.type === "file") {
+                        initialData[q.id] = q.multiple ? [] : null;
+                    } else if (q.type === "consent") {
+                        initialData[q.id] = false;
+                    } else if (q.type === "slider") {
+                        initialData[q.id] = q.min || 0;
+                    } else {
+                        initialData[q.id] = "";
+                    }
+                });
+                setFormData(initialData);
+                setFormState("form");
+                return;
+            }
+
             const response = await fetch(FETCH_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -358,6 +403,36 @@ export default function FormPage() {
             });
             return true;
         }
+    };
+
+    // Validate questions in the current section
+    const validateSection = (sectionName: string): boolean => {
+        if (!formConfig) return false;
+
+        const sectionQuestions = formConfig.questions.filter(q => q.section === sectionName);
+        const errors: Record<string, string> = {};
+
+        sectionQuestions.forEach(q => {
+            const error = validateQuestion(q);
+            if (error) {
+                errors[q.id] = error;
+            }
+        });
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(prev => ({ ...prev, ...errors }));
+
+            // Scroll to first error
+            const firstErrorId = Object.keys(errors)[0];
+            const element = document.getElementById(`question-${firstErrorId}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+            return false;
+        }
+
+        return true;
     };
 
     // Quiz mode: Go to next question
@@ -1080,130 +1155,282 @@ export default function FormPage() {
                                 })}
                             </div>
                         )}
-                        <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-center leading-tight whitespace-pre-line">
-                            {formConfig.title}
-                        </h1>
-                        {formConfig.description && (
-                            <p className="text-muted-foreground font-bai mt-3 text-center text-base md:text-lg max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
-                                {formConfig.description}
-                            </p>
-                        )}
+                        {(() => {
+                            // Check for sections to determine which progress indicator to show
+                            const hasSections = formConfig.questions.some(q => !!q.section);
 
-                        {/* Single Mode (Step-by-step) Progress Indicator */}
-                        {formConfig.formMode === 'single' && (
-                            <div className="mt-6">
-                                {/* Progress Dots */}
-                                <div className="flex justify-center items-center gap-2">
-                                    {formConfig.questions.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            type="button"
-                                            onClick={() => {
-                                                // Allow going to previous questions without validation
-                                                if (index < currentQuestionIndex) {
-                                                    setCurrentQuestionIndex(index);
-                                                }
-                                            }}
-                                            className={cn(
-                                                "w-2.5 h-2.5 rounded-full transition-all duration-300",
-                                                index === currentQuestionIndex
-                                                    ? "bg-primary w-8"
-                                                    : index < currentQuestionIndex
-                                                        ? "bg-primary/60 cursor-pointer hover:bg-primary/80"
-                                                        : "bg-muted-foreground/30"
-                                            )}
-                                        />
-                                    ))}
-                                </div>
-                                {/* Progress Text */}
-                                <p className="text-center text-sm text-muted-foreground font-bai mt-3">
-                                    ข้อที่ {currentQuestionIndex + 1} จาก {formConfig.questions.length}
-                                </p>
-                            </div>
-                        )}
+                            return (
+                                <>
+                                    <h1 className="text-2xl md:text-3xl font-bold font-bai text-foreground text-center leading-tight whitespace-pre-line">
+                                        {formConfig.title}
+                                    </h1>
+                                    {formConfig.description && (
+                                        <p className="text-muted-foreground font-bai mt-3 text-center text-base md:text-lg max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
+                                            {formConfig.description}
+                                        </p>
+                                    )}
+
+                                    {/* Single Mode (Step-by-step) Progress Indicator - ONLY show if NO sections */}
+                                    {formConfig.formMode === 'single' && !hasSections && (
+                                        <div className="mt-6">
+                                            {/* Progress Dots */}
+                                            <div className="flex justify-center items-center gap-2">
+                                                {formConfig.questions.map((_, index) => (
+                                                    <button
+                                                        key={index}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            // Allow going to previous questions without validation
+                                                            if (index < currentQuestionIndex) {
+                                                                setCurrentQuestionIndex(index);
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                                                            index === currentQuestionIndex
+                                                                ? "bg-primary w-8"
+                                                                : index < currentQuestionIndex
+                                                                    ? "bg-primary/60 cursor-pointer hover:bg-primary/80"
+                                                                    : "bg-muted-foreground/30"
+                                                        )}
+                                                    />
+                                                ))}
+                                            </div>
+                                            {/* Progress Text */}
+                                            <p className="text-center text-sm text-muted-foreground font-bai mt-3">
+                                                ข้อที่ {currentQuestionIndex + 1} จาก {formConfig.questions.length}
+                                            </p>
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
 
                     {/* Single Mode (Step-by-step) View */}
                     {formConfig.formMode === 'single' ? (
                         <div className="p-6 md:p-8">
-                            {/* Current Question */}
                             {(() => {
+                                // 1. Check for Sections Data
+                                const hasSections = formConfig.questions.some(q => !!q.section);
+
+                                // --- CASE A: SECTION WIZARD (Single Mode + Sections) ---
+                                if (hasSections) {
+                                    // Get unique sections
+                                    const sections = Array.from(new Set(formConfig.questions.map(q => q.section || 'General')));
+                                    const currentSection = sections[currentSectionIndex];
+                                    const currentQuestions = formConfig.questions.filter(q => (q.section || 'General') === currentSection);
+
+                                    // Check if current section has required fields
+                                    const isSectionRequired = currentQuestions.some(q => q.required);
+
+                                    const handleNextSection = () => {
+                                        if (validateSection(currentSection)) {
+                                            setCurrentSectionIndex(prev => prev + 1);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }
+                                    };
+
+                                    const handlePrevSection = () => {
+                                        if (currentSectionIndex > 0) {
+                                            setCurrentSectionIndex(prev => prev - 1);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }
+                                    };
+
+                                    // If last section, wrapped in form to handle submit on enter (optional) or button click
+                                    const isLastSection = currentSectionIndex === sections.length - 1;
+
+                                    return (
+                                        <div className="space-y-6">
+                                            {/* Section Header */}
+                                            <div className="pb-4 border-b border-border mb-6">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <h2 className="text-xl md:text-2xl font-bold font-bai text-primary">
+                                                        {currentSection}
+                                                    </h2>
+                                                    {isSectionRequired && (
+                                                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive font-bai border border-destructive/20">
+                                                            Required
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    {sections.map((_, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className={cn(
+                                                                "h-1.5 rounded-full flex-1 transition-all duration-300",
+                                                                idx <= currentSectionIndex ? "bg-primary" : "bg-muted"
+                                                            )}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                <p className="text-right text-xs text-muted-foreground mt-1.5 font-bai">
+                                                    ส่วนที่ {currentSectionIndex + 1} จาก {sections.length}
+                                                </p>
+                                            </div>
+
+                                            {/* Questions in Section */}
+                                            {currentQuestions.map((question) => (
+                                                <div
+                                                    key={question.id}
+                                                    id={`question-${question.id}`}
+                                                    className="space-y-2.5"
+                                                >
+                                                    {/* Label without required marker (moved to section header) */}
+                                                    {question.label && (question.type !== 'consent' || (question.choices && question.choices.length > 0)) && (
+                                                        <label className="pir-form-label font-bai block whitespace-pre-line">
+                                                            <span className="text-base md:text-lg">{question.label}</span>
+                                                        </label>
+                                                    )}
+
+                                                    {/* Description */}
+                                                    {question.description && (
+                                                        <p className="pir-form-description font-bai">
+                                                            {question.description}
+                                                        </p>
+                                                    )}
+
+                                                    {/* Input */}
+                                                    {renderQuestionInput(question)}
+
+                                                    {/* Validation Error */}
+                                                    {validationErrors[question.id] && (
+                                                        <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1.5">
+                                                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                                            {validationErrors[question.id]}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            {/* Navigation Buttons for Sections */}
+                                            <div className="flex items-center justify-between pt-6 border-t border-border mt-8">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={handlePrevSection}
+                                                    disabled={currentSectionIndex === 0}
+                                                    className={cn(
+                                                        "h-12 px-6 font-bai rounded-full transition-all",
+                                                        currentSectionIndex === 0 && "opacity-0 pointer-events-none"
+                                                    )}
+                                                >
+                                                    <ChevronLeft className="h-5 w-5 mr-1" />
+                                                    ย้อนกลับ
+                                                </Button>
+
+                                                {isLastSection ? (
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (validateSection(currentSection)) {
+                                                                handleSubmit();
+                                                            }
+                                                        }}
+                                                        size="lg"
+                                                        className="h-12 md:h-14 px-8 text-base md:text-lg font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                                                    >
+                                                        <Check className="h-5 w-5 mr-2" />
+                                                        ส่งคำตอบ
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        type="button"
+                                                        onClick={handleNextSection}
+                                                        size="lg"
+                                                        className="h-12 md:h-14 px-8 text-base md:text-lg font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                                                    >
+                                                        ถัดไป
+                                                        <ChevronRight className="h-5 w-5 ml-1" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                // --- CASE B: QUESTION WIZARD (Single Mode + NO Sections) ---
+                                // Standard Step-by-Step Question
                                 const question = formConfig.questions[currentQuestionIndex];
                                 return (
-                                    <div
-                                        key={question.id}
-                                        id={`question-${question.id}`}
-                                        className={cn(
-                                            "p-4 md:p-5 transition-all duration-200",
-                                            validationErrors[question.id]
-                                                ? "bg-destructive/5"
-                                                : ""
-                                        )}
-                                    >
-                                        <div className="mb-4">
-                                            <h2 className="text-lg md:text-xl font-medium font-bai text-foreground flex items-center gap-2">
-                                                {question.label}
-                                                {question.required && (
-                                                    <span className="text-xs text-destructive font-normal">(จำเป็น)</span>
+                                    <>
+                                        <div
+                                            key={question.id}
+                                            id={`question-${question.id}`}
+                                            className={cn(
+                                                "p-4 md:p-5 transition-all duration-200",
+                                                validationErrors[question.id]
+                                                    ? "bg-destructive/5"
+                                                    : ""
+                                            )}
+                                        >
+                                            <div className="mb-4">
+                                                <h2 className="text-lg md:text-xl font-medium font-bai text-foreground flex items-center gap-2">
+                                                    {question.label}
+                                                    {question.required && (
+                                                        <span className="text-xs text-destructive font-normal">(จำเป็น)</span>
+                                                    )}
+                                                </h2>
+                                                {question.description && (
+                                                    <p className="text-sm text-muted-foreground font-bai mt-2">
+                                                        {question.description}
+                                                    </p>
                                                 )}
-                                            </h2>
-                                            {question.description && (
-                                                <p className="text-sm text-muted-foreground font-bai mt-2">
-                                                    {question.description}
+                                            </div>
+
+                                            {renderQuestionInput(question)}
+
+                                            {validationErrors[question.id] && (
+                                                <p className="text-sm text-destructive font-bai mt-3 flex items-center gap-1">
+                                                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                                    {validationErrors[question.id]}
                                                 </p>
                                             )}
                                         </div>
 
-                                        {renderQuestionInput(question)}
+                                        {/* Navigation Buttons */}
+                                        <div className="flex items-center justify-between mt-6 gap-4">
+                                            {/* Previous Button */}
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={handlePrevQuestion}
+                                                disabled={currentQuestionIndex === 0}
+                                                className={cn(
+                                                    "h-12 px-6 font-bai rounded-full transition-all",
+                                                    currentQuestionIndex === 0 && "opacity-50 cursor-not-allowed"
+                                                )}
+                                            >
+                                                <ChevronLeft className="h-5 w-5 mr-1" />
+                                                ย้อนกลับ
+                                            </Button>
 
-                                        {validationErrors[question.id] && (
-                                            <p className="text-sm text-destructive font-bai mt-3 flex items-center gap-1">
-                                                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                                                {validationErrors[question.id]}
-                                            </p>
-                                        )}
-                                    </div>
+                                            {/* Next / Submit Button */}
+                                            {currentQuestionIndex === formConfig.questions.length - 1 ? (
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleQuizSubmit}
+                                                    className="h-12 px-8 font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                                                >
+                                                    <Check className="h-5 w-5 mr-2" />
+                                                    ส่งคำตอบ
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleNextQuestion}
+                                                    className="h-12 px-8 font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
+                                                >
+                                                    ถัดไป
+                                                    <ChevronRight className="h-5 w-5 ml-1" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </>
                                 );
                             })()}
-
-                            {/* Navigation Buttons */}
-                            <div className="flex items-center justify-between mt-6 gap-4">
-                                {/* Previous Button */}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handlePrevQuestion}
-                                    disabled={currentQuestionIndex === 0}
-                                    className={cn(
-                                        "h-12 px-6 font-bai rounded-full transition-all",
-                                        currentQuestionIndex === 0 && "opacity-50 cursor-not-allowed"
-                                    )}
-                                >
-                                    <ChevronLeft className="h-5 w-5 mr-1" />
-                                    ย้อนกลับ
-                                </Button>
-
-                                {/* Next / Submit Button */}
-                                {currentQuestionIndex === formConfig.questions.length - 1 ? (
-                                    <Button
-                                        type="button"
-                                        onClick={handleQuizSubmit}
-                                        className="h-12 px-8 font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
-                                    >
-                                        <Check className="h-5 w-5 mr-2" />
-                                        ส่งคำตอบ
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        type="button"
-                                        onClick={handleNextQuestion}
-                                        className="h-12 px-8 font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
-                                    >
-                                        ถัดไป
-                                        <ChevronRight className="h-5 w-5 ml-1" />
-                                    </Button>
-                                )}
-                            </div>
                         </div>
                     ) : (
                         /* Full-page Mode (All questions on one page) */
@@ -1217,6 +1444,7 @@ export default function FormPage() {
                                         className="space-y-2.5"
                                     >
                                         {/* Section Header */}
+                                        {/* Show section header if defined and different from previous */}
                                         {(index === 0 || question.section !== formConfig.questions[index - 1].section) && question.section && (
                                             <div className="pt-4 pb-2">
                                                 <h3 className="text-xl md:text-2xl font-bold font-bai text-primary">
@@ -1276,21 +1504,23 @@ export default function FormPage() {
                         </form>
                     )}
                 </div>
-            </div>
+            </div >
 
             {/* Floating Logo - Bottom Left */}
             {/* Floating Logo - Bottom Left */}
-            {formConfig.logoUrl && (
-                <div className="fixed bottom-4 left-4 z-50">
-                    <div className="bg-card rounded-lg shadow-lg p-3 hover:shadow-xl transition-shadow duration-300">
-                        <img
-                            src={formConfig.logoUrl}
-                            alt="Logo"
-                            className="h-8 md:h-10 object-contain"
-                        />
+            {
+                formConfig.logoUrl && (
+                    <div className="fixed bottom-4 left-4 z-50">
+                        <div className="bg-card rounded-lg shadow-lg p-3 hover:shadow-xl transition-shadow duration-300">
+                            <img
+                                src={formConfig.logoUrl}
+                                alt="Logo"
+                                className="h-8 md:h-10 object-contain"
+                            />
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
