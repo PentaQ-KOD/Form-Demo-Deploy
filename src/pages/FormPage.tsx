@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import aiScalingForm from "../../ai-scaling-2026-form.json";
+
 
 // Question types from Google Sheets schema
 interface Question {
@@ -88,45 +88,7 @@ export default function FormPage() {
 
         try {
             // Override for development/testing with local file
-            if (formId === 'ai-scaling-2026' || formId === 'test') {
-                console.log('Using local configuration for ai-scaling-2026');
-                // Simulate network delay
-                await new Promise(resolve => setTimeout(resolve, 500));
 
-                const data = aiScalingForm;
-
-                // Normalize formMode
-                const rawFormMode = (data as any).formMode || (data as any)['form mode'] || '';
-                const normalizedFormMode = rawFormMode.toLowerCase() === 'full-page' || rawFormMode.toLowerCase() === 'fullpage'
-                    ? 'full-page'
-                    : 'single';
-
-                setFormConfig({
-                    ...data as any,
-                    formMode: normalizedFormMode
-                });
-
-                // Initialize form data
-                const initialData: Record<string, string | string[] | number | File | File[] | null | boolean> = {};
-                (data.questions as any[]).forEach((q: Question) => {
-                    if (q.type === "choices" && q.multiple) {
-                        initialData[q.id] = [];
-                    } else if (q.type === "rating") {
-                        initialData[q.id] = 0;
-                    } else if (q.type === "file") {
-                        initialData[q.id] = q.multiple ? [] : null;
-                    } else if (q.type === "consent") {
-                        initialData[q.id] = false;
-                    } else if (q.type === "slider") {
-                        initialData[q.id] = q.min || 0;
-                    } else {
-                        initialData[q.id] = "";
-                    }
-                });
-                setFormData(initialData);
-                setFormState("form");
-                return;
-            }
 
             const response = await fetch(FETCH_URL, {
                 method: "POST",
