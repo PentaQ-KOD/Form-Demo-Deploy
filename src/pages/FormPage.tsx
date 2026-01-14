@@ -139,13 +139,9 @@ export default function FormPage() {
                 } else if (q.type === "consent") {
                     initialData[q.id] = false;
                 } else if (q.type === "slider") {
-                    const min = q.min !== undefined ? q.min : 0;
-                    const max = q.max !== undefined ? q.max : 100;
-                    initialData[q.id] = Math.floor((min + max) / 2);
+                    initialData[q.id] = null;
                 } else if (q.type === "linear") {
-                    const min = q.min || 1;
-                    const max = q.max || 5;
-                    initialData[q.id] = Math.ceil((min + max) / 2);
+                    initialData[q.id] = null;
                 } else if (q.type === "paragraph") {
                     initialData[q.id] = "";
                 } else {
