@@ -108,9 +108,68 @@ export default function FormPage() {
             // n8n returns array when using "allIncomingItems", extract first item
             const data = Array.isArray(rawData) ? rawData[0] : rawData;
 
+            // Handle nested "sections" structure: valid if "questions" is empty/missing but "sections" exists
+            if ((!data.questions || data.questions.length === 0) && data.sections && Array.isArray(data.sections)) {
+                console.log('[FormPage] Detected nested sections structure, flattening...');
+                const flattenedQuestions: any[] = [];
+
+                data.sections.forEach((section: any) => {
+                    if (section.questions && Array.isArray(section.questions)) {
+                        section.questions.forEach((q: any) => {
+                            // Add section label to the question
+                            flattenedQuestions.push({
+                                ...q,
+                                section: section.label || section.title // Use section.label as the grouping key
+                            });
+                        });
+                    }
+                });
+
+                data.questions = flattenedQuestions;
+            }
+
+            // Validation: Ensure questions exist after flattening
             if (!data || !data.questions || data.questions.length === 0) {
                 throw new Error("Invalid form configuration");
             }
+
+            // Auto-generate IDs for questions that don't have them
+            const usedIds = new Set<string>();
+            // First pass: collect existing IDs
+            data.questions.forEach((q: any) => {
+                if (q.id) {
+                    usedIds.add(q.id);
+                }
+            });
+
+            // Second pass: generate IDs where missing
+            const processedQuestions = data.questions.map((q: any) => {
+                if (!q.id) {
+                    // Generate ID: type_randomString (e.g., text_x8k29a)
+                    const prefix = q.type || 'question';
+                    let newId = '';
+                    let attempts = 0;
+                    do {
+                        // Generate 6 random alphanumeric characters
+                        const randomStr = Math.random().toString(36).substring(2, 8);
+                        newId = `${prefix}_${randomStr}`;
+                        attempts++;
+                    } while (usedIds.has(newId) && attempts < 100);
+
+                    // Fallback if collision persists (unlikely)
+                    if (usedIds.has(newId)) {
+                        newId = `${prefix}_${Date.now()}`;
+                    }
+
+                    usedIds.add(newId);
+                    console.log(`[FormPage] Generated ID for question "${q.label?.substring(0, 15)}...": ${newId}`);
+                    return { ...q, id: newId };
+                }
+                return q;
+            });
+
+            // Update questions with processed ones
+            data.questions = processedQuestions;
 
             // Normalize formMode from n8n (handles "form mode" key and case-insensitive values)
             const rawFormMode = data.formMode || data['form mode'] || '';

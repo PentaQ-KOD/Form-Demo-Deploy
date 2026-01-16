@@ -61,6 +61,8 @@ All questions share these base properties:
 |------|-------------|
 | `text` | Single or multi-line text input |
 | `choices` | Single or multiple choice selection |
+| `linear` | Linear Scale (Likert) |
+| `slider` | Range slider |
 | `rating` | Star rating (1-5) |
 | `email` | Email input with validation |
 | `phone` | Phone number input |
@@ -90,6 +92,22 @@ For short answers or long-form text input.
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `multiline` | boolean | ❌ No | If `true`, renders as textarea |
+
+---
+
+### 1.1 Paragraph (`type: "paragraph"`)
+
+Equivalent to text with `multiline: true`.
+
+```json
+{
+  "id": "suggestion",
+  "type": "paragraph",
+  "label": "ข้อเสนอแนะ",
+  "required": false,
+  "placeholder": "พิมพ์ข้อความ..."
+}
+```
 
 ---
 
@@ -139,6 +157,56 @@ For star rating input.
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `maxRating` | number | ❌ No | Maximum stars (default: 5) |
+
+---
+
+### 3.1 Linear Scale (`type: "linear"`)
+
+For Likert scale questions (e.g. 1-5, 0-10) with custom labels.
+
+```json
+{
+  "id": "satisfaction",
+  "type": "linear",
+  "label": "ระดับความพึงพอใจ",
+  "required": true,
+  "min": 1,
+  "max": 5,
+  "minLabel": "น้อยที่สุด",
+  "maxLabel": "มากที่สุด"
+}
+```
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `min` | number | ❌ No | Minimum value (default: 1) |
+| `max` | number | ❌ No | Maximum value (default: 5) |
+| `minLabel` | string | ❌ No | Label for minimum value |
+| `maxLabel` | string | ❌ No | Label for maximum value |
+
+---
+
+### 3.2 Slider (`type: "slider"`)
+
+For selecting a numeric value from a range.
+
+```json
+{
+  "id": "budget",
+  "type": "slider",
+  "label": "งบประมาณ",
+  "required": true,
+  "min": 0,
+  "max": 10000,
+  "step": 100
+}
+```
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `min` | number | ❌ No | Minimum value (default: 0) |
+| `max` | number | ❌ No | Maximum value (default: 100) |
+| `step` | number | ❌ No | Step increment (default: 1) |
 
 ---
 

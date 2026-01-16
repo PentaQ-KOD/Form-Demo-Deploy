@@ -5,7 +5,7 @@ A dynamic, web-based form builder powered by Google Sheets and n8n webhooks. Cre
 ## 🌟 Features
 
 - **Dynamic Form Loading**: Forms configured in Google Sheets, no code deployment needed
-- **Multiple Question Types**: Text, Email, Phone, Choices, Dropdown, Rating, Date, File Upload
+- **Multiple Question Types**: Text, Paragraph, Email, Phone, Choices, Dropdown, Rating, Linear Scale, Slider, Date, File Upload
 - **Form Modes**: Single (step-by-step) or Full-page (all questions at once)
 - **Real-time Validation**: Email and Thai phone number validation
 - **File Uploads**: Direct upload to Google Drive with Base64 encoding
@@ -63,7 +63,7 @@ VITE_SUBMIT_URL=https://your-n8n-domain.com/webhook/pir/submit
    - `form title`: Display title
    - `form description`: Optional description
    - `form definition`: JSON with questions array
-   - `form mode`: "single" (step-by-step, one at a time) or "full-page" (all questions on one page)
+   - `form mode`: "single" (step-by-step wizard) or "full-page" (scrollable page)
    - `logo url`: Optional logo
    - `success url`: Optional redirect after submission
    - `notify emails`: Admin notification emails (comma-separated)
@@ -94,19 +94,16 @@ See [`FORM_SCHEMA.md`](./FORM_SCHEMA.md) for complete documentation.
   "description": "Help us improve our service",
   "questions": [
     {
-      "id": "name",
       "type": "text",
       "label": "Your Name",
       "required": true
     },
     {
-      "id": "email",
       "type": "email",
       "label": "Email Address",
       "required": true
     },
     {
-      "id": "rating",
       "type": "rating",
       "label": "Overall Satisfaction",
       "maxRating": 5,
@@ -194,6 +191,8 @@ Forms are fetched from Google Sheets via n8n webhooks, allowing non-technical us
 - **Choices**: Single/multiple selection buttons
 - **Dropdown**: Select menu with "Other" option support
 - **Rating**: Star rating (1-10)
+- **Linear Scale**: Likert scale (1-5, 1-10) with custom labels
+- **Slider**: Range slider (0-100)
 - **Date**: Date picker
 - **File**: Upload with type/size validation → Google Drive
 
