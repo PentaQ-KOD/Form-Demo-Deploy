@@ -17,7 +17,7 @@ export const QuizIdEntry = ({ isDark }: QuizIdEntryProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (quizId.trim()) {
-      navigate(`/form/${quizId.trim()}`);
+      navigate(`/${quizId.trim()}`);
     }
   };
 
