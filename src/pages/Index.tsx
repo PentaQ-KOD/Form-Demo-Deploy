@@ -112,6 +112,12 @@ const Index = () => {
       return;
     }
 
+    // Special redirect for ai-transformation-maturity
+    if (quizid === "ai-transformation-maturity") {
+      window.location.href = "https://www.piracademy.com/";
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
