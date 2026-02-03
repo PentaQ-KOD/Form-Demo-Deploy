@@ -84,8 +84,7 @@ export const WelcomeScreen = ({
                 <img
                   src={customerLogoUrl}
                   alt="Customer Logo"
-                  className="h-12 md:h-18 opacity-90 transition-none"
-                  style={{ transform: 'scale(1.5)' }}
+                  className="h-20 md:h-24 min-h-[56px] w-auto max-w-[240px] md:max-w-[480px] object-contain opacity-90 transition-none"
                 />
                 <h1 className="text-xl md:text-3xl font-bold text-foreground font-noto text-center">
                   {testName}

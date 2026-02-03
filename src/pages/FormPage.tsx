@@ -13,7 +13,7 @@ import remarkGfm from "remark-gfm";
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear" | "paragraph";
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear" | "paragraph" | "html" | "markdown";  // ✨ Added html and markdown
     label: string;
     description?: string;
     required?: boolean;
@@ -23,7 +23,9 @@ interface Question {
     multiple?: boolean; // For choices (multiple selection) and file (multiple file upload)
     multiline?: boolean;
     maxRating?: number;
-    accept?: string;
+    variant?: string;
+    content?: string;  // ✨ For html and markdown types
+    accept?: string;  // For file upload
     maxSize?: number;
     fullWidth?: boolean; // If true, question spans full width in 2-column layout
     // Slider properties
@@ -57,12 +59,45 @@ interface FormConfig {
     formMode?: 'single' | 'full-page';
     driveUrl?: string;  // Google Drive folder URL for file uploads
     emailCredential?: string;  // Email credential identifier (e.g., "pooh", "pir")
+    submitButtonText?: string;  // Custom submit button label (default: "ส่งคำตอบ")
+
+    // ✨ Consent tracking fields
+    formVersion?: string;  // Form version (e.g., "v1.0")
+    consentVersion?: string;  // Consent text version (e.g., "v2.0")
+    processingPurpose?: string;  // Data processing purpose
+    dataRetentionPeriod?: string;  // Data retention period (e.g., "2 years")
+    consentLogSheet?: string;  // URL for separate consent log sheet
 }
 
 type FormState = "loading" | "error" | "form" | "submitting" | "thankyou";
 
 const FETCH_URL = import.meta.env.VITE_FORM_FETCH_URL || "https://auto.pirsquare.net/webhook-test/pir/form";
 const SUBMIT_URL = import.meta.env.VITE_FORM_SUBMIT_URL || "https://auto.pirsquare.net/webhook-test/pir/form/submit";
+
+
+/**
+ * Extract consent text from questions
+ * @param questions - Array of questions
+ * @returns Consent text (joined with semicolon if multiple)
+ */
+const extractConsentText = (questions: Question[]): string => {
+    const texts: string[] = [];
+
+    for (const q of questions) {
+        // Case 1: type = "consent" (JSON forms - checkbox)
+        if (q.type === 'consent') {
+            texts.push(q.label || (q.choices && q.choices[0]) || '');
+        }
+
+        // Case 2: type = "markdown" or "html" (new formats - full content)
+        if (q.type === 'markdown' || q.type === 'html') {
+            texts.push(q.content || '');
+        }
+    }
+
+    return texts.join('; ');
+};
+
 
 export default function FormPage() {
     const { formId } = useParams<{ formId: string }>();
@@ -541,6 +576,10 @@ export default function FormPage() {
                 }
             }
 
+            // ✨ Extract consent text
+            const consentText = extractConsentText(formConfig.questions);
+
+            // Create payload with consent metadata
             const payload = {
                 form_id: formId,
                 form_title: formConfig.title,
@@ -560,7 +599,18 @@ export default function FormPage() {
                     minute: '2-digit',
                     second: '2-digit'
                 }),
+
+                // ✨ Consent metadata (IP will be extracted by n8n from headers)
+                user_agent: navigator.userAgent,
+                form_version: formConfig.formVersion || 'v1.0',
+                consent_version: formConfig.consentVersion || 'v1.0',
+                consent_text: consentText,
+                processing_purpose: formConfig.processingPurpose || '',
+                data_retention_period: formConfig.dataRetentionPeriod || '',
+                consent_log_sheet: formConfig.consentLogSheet || '',
             };
+
+            console.log('Submitting payload with IP tracking:', payload);
 
             const response = await fetch(SUBMIT_URL, {
                 method: "POST",
@@ -585,6 +635,38 @@ export default function FormPage() {
         const error = validationErrors[question.id];
 
         switch (question.type) {
+            // ✨ HTML Content (for consent forms)
+            case "html":
+                return (
+                    <div
+                        className="bg-background/50 p-6 rounded-lg border border-border"
+                        dangerouslySetInnerHTML={{ __html: question.content || '' }}
+                    />
+                );
+
+            // ✨ Markdown Content (for consent forms)
+            case "markdown":
+                return (
+                    <div className="markdown-content bg-background/50 p-6 rounded-lg border border-border">
+                        <ReactMarkdown
+                            components={{
+                                h1: ({ node, ...props }) => <h1 className="text-3xl font-bold mb-4 mt-6" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-3 mt-5" {...props} />,
+                                h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2 mt-4" {...props} />,
+                                p: ({ node, ...props }) => <p className="mb-3 leading-relaxed" {...props} />,
+                                ul: ({ node, ...props }) => <ul className="list-disc list-inside mb-3 space-y-1" {...props} />,
+                                ol: ({ node, ...props }) => <ol className="list-decimal list-inside mb-3 space-y-1" {...props} />,
+                                li: ({ node, ...props }) => <li className="ml-4" {...props} />,
+                                strong: ({ node, ...props }) => <strong className="font-bold text-primary" {...props} />,
+                                a: ({ node, ...props }) => <a className="text-primary hover:underline" {...props} />,
+                                hr: ({ node, ...props }) => <hr className="my-4 border-border" {...props} />,
+                            }}
+                        >
+                            {question.content || ''}
+                        </ReactMarkdown>
+                    </div>
+                );
+
             case "choices":
                 return (
                     <ChoiceField
@@ -593,6 +675,7 @@ export default function FormPage() {
                         onChange={(v) => handleChange(question.id, v)}
                         multiple={question.multiple}
                         variant={(question as any).variant || "default"}
+                        label={question.label}  // ✨ Pass label for Markdown rendering
                     />
                 );
 
@@ -1393,7 +1476,7 @@ export default function FormPage() {
                                                         className="h-12 md:h-14 px-8 text-base md:text-lg font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
                                                     >
                                                         <Check className="h-5 w-5 mr-2" />
-                                                        ส่งคำตอบ
+                                                        {formConfig.submitButtonText || "ส่งคำตอบ"}
                                                     </Button>
                                                 ) : (
                                                     <Button
@@ -1475,7 +1558,7 @@ export default function FormPage() {
                                                     className="h-12 px-8 font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
                                                 >
                                                     <Check className="h-5 w-5 mr-2" />
-                                                    ส่งคำตอบ
+                                                    {formConfig.submitButtonText || "ส่งคำตอบ"}
                                                 </Button>
                                             ) : (
                                                 <Button
@@ -1555,7 +1638,7 @@ export default function FormPage() {
                                     className="w-full h-12 md:h-14 text-base md:text-lg font-bai rounded-full bg-primary hover:bg-primary/90 transition-all hover:shadow-lg"
                                 >
                                     <Check className="h-5 w-5 mr-2" />
-                                    ส่งคำตอบ
+                                    {formConfig.submitButtonText || "ส่งคำตอบ"}
                                 </Button>
                                 <p className="text-center text-sm text-muted-foreground font-bai mt-3">
                                     กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนกดส่ง

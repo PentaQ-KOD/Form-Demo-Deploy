@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 
 interface ChoiceFieldProps {
     options: string[];
@@ -11,6 +12,7 @@ interface ChoiceFieldProps {
     variant?: "default" | "card" | "pill";
     descriptions?: Record<string, string>;
     icons?: Record<string, React.ReactNode>;
+    label?: string;  // ✨ NEW: Support Markdown label
 }
 
 // Common "other" option variations in Thai
@@ -25,6 +27,7 @@ export const ChoiceField = ({
     variant = "default",
     descriptions = {},
     icons = {},
+    label,  // ✨ NEW
 }: ChoiceFieldProps) => {
     const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
 
@@ -255,71 +258,80 @@ export const ChoiceField = ({
 
     // Default variant - list of buttons (upgraded design)
     return (
-        <div className="space-y-2">
-            {options.map((option) => {
-                const isOther = otherOption && option === otherOption;
-                const isSelected = isOther
-                    ? isOtherSelected
-                    : selectedValues.includes(option);
+        <div className="space-y-3">
+            {/* ✨ Render Markdown label if provided */}
+            {label && (
+                <div className="prose prose-sm max-w-none mb-4">
+                    <ReactMarkdown>{label}</ReactMarkdown>
+                </div>
+            )}
 
-                return (
-                    <div key={option}>
-                        <button
-                            type="button"
-                            disabled={disabled}
-                            onClick={() => handleClick(option)}
-                            className={cn(
-                                "pir-form-choice w-full text-left px-4 py-3 rounded-xl transition-all duration-200",
-                                "flex items-center gap-3 font-bai text-base",
-                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-                                "hover:bg-muted/20",
-                                isSelected
-                                    ? "bg-primary/5 shadow-sm"
-                                    : "bg-muted/10",
-                                disabled && "opacity-50 cursor-not-allowed"
-                            )}
-                        >
-                            {/* Selection indicator */}
-                            <div
+            <div className="space-y-2">
+                {options.map((option) => {
+                    const isOther = otherOption && option === otherOption;
+                    const isSelected = isOther
+                        ? isOtherSelected
+                        : selectedValues.includes(option);
+
+                    return (
+                        <div key={option}>
+                            <button
+                                type="button"
+                                disabled={disabled}
+                                onClick={() => handleClick(option)}
                                 className={cn(
-                                    "flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
-                                    multiple ? "rounded" : "rounded-full",
+                                    "pir-form-choice w-full text-left px-4 py-3 rounded-xl transition-all duration-200",
+                                    "flex items-center gap-3 font-bai text-base",
+                                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+                                    "hover:bg-muted/20",
                                     isSelected
-                                        ? "border-primary bg-primary"
-                                        : "border-muted-foreground/30"
+                                        ? "bg-primary/5 shadow-sm"
+                                        : "bg-muted/10",
+                                    disabled && "opacity-50 cursor-not-allowed"
                                 )}
                             >
-                                {isSelected && (
-                                    <Check className="h-3 w-3 text-primary-foreground" />
-                                )}
-                            </div>
-
-                            {/* Option text */}
-                            <span className="flex-1">{option}</span>
-                        </button>
-
-                        {/* Other text input - show when "other" is selected */}
-                        {isOther && isSelected && (
-                            <div className="mt-2 ml-8">
-                                <input
-                                    type="text"
-                                    value={otherText}
-                                    onChange={(e) => handleOtherTextChange(e.target.value)}
-                                    placeholder="โปรดระบุ..."
-                                    disabled={disabled}
+                                {/* Selection indicator */}
+                                <div
                                     className={cn(
-                                        "w-full px-4 py-2 rounded-lg border-2 border-border",
-                                        "font-bai text-base bg-background",
-                                        "focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary",
-                                        disabled && "opacity-50 cursor-not-allowed"
+                                        "flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+                                        multiple ? "rounded" : "rounded-full",
+                                        isSelected
+                                            ? "border-primary bg-primary"
+                                            : "border-muted-foreground/30"
                                     )}
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            </div>
-                        )}
-                    </div>
-                );
-            })}
+                                >
+                                    {isSelected && (
+                                        <Check className="h-3 w-3 text-primary-foreground" />
+                                    )}
+                                </div>
+
+                                {/* Option text */}
+                                <span className="flex-1">{option}</span>
+                            </button>
+
+                            {/* Other text input - show when "other" is selected */}
+                            {isOther && isSelected && (
+                                <div className="mt-2 ml-8">
+                                    <input
+                                        type="text"
+                                        value={otherText}
+                                        onChange={(e) => handleOtherTextChange(e.target.value)}
+                                        placeholder="โปรดระบุ..."
+                                        disabled={disabled}
+                                        className={cn(
+                                            "w-full px-4 py-2 rounded-lg border-2 border-border",
+                                            "font-bai text-base bg-background",
+                                            "focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary",
+                                            disabled && "opacity-50 cursor-not-allowed"
+                                        )}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 };
