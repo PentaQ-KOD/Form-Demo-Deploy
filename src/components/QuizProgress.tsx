@@ -45,21 +45,13 @@ export const QuizProgress = ({
   const completedCount = currentQuestion - 1;
   const remainingCount = totalQuestions - currentQuestion;
 
-  const mobileClasses = "fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1100px] z-50 bg-gradient-to-t from-background via-background/80 to-transparent backdrop-blur-sm px-4 min-h-[64px] h-auto pb-[env(safe-area-inset-bottom)] flex flex-row items-center justify-between gap-3 pointer-events-none";
-  const desktopClasses = "w-full mt-4 pt-4 flex flex-row items-center justify-between gap-3 pointer-events-none";
+  const mobileClasses = "fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1100px] z-50 bg-gradient-to-t from-background via-background/80 to-transparent backdrop-blur-sm px-4 min-h-[64px] h-auto pb-[env(safe-area-inset-bottom)] flex flex-row items-center justify-center gap-3 pointer-events-none";
+  const desktopClasses = "w-full mt-4 pt-4 flex flex-row items-center justify-center gap-3 pointer-events-none";
 
   return (
     <footer className={isMobile ? mobileClasses : desktopClasses}>
-      {customerLogoUrl && (
-        <img
-          src={customerLogoUrl}
-          alt="Customer Logo"
-          className={`opacity-90 transition-none pointer-events-auto ${isMobile ? "h-10" : "h-16"}`}
-        />
-      )}
-
-      <div className={`flex flex-col gap-3 pointer-events-auto ${isMobile ? "items-end" : "items-center w-auto"}`}>
-        <div className={`flex items-center gap-2 w-full justify-end ${!isMobile && "gap-3 justify-center w-auto"}`}>
+      <div className={`flex flex-col gap-6 pointer-events-auto items-center ${isMobile ? "w-full" : "w-auto"}`}>
+        <div className={`flex items-center gap-2 justify-center ${isMobile ? "w-full" : "gap-3 w-auto"}`}>
           <button
             onClick={onPrevious}
             disabled={!showPrevious}
@@ -103,9 +95,15 @@ export const QuizProgress = ({
 
           {!showNext && <div className="w-[8px]" />}
         </div>
-      </div>
 
-      {!isMobile && <div className="w-[100px]" />}
+        {customerLogoUrl && (
+          <img
+            src={customerLogoUrl}
+            alt="Customer Logo"
+            className={`opacity-90 transition-none pointer-events-auto w-auto object-contain ${isMobile ? "h-12 min-h-[32px] max-w-[144px]" : "h-14 min-h-[32px] max-w-[288px]"}`}
+          />
+        )}
+      </div>
     </footer>
   );
 };
