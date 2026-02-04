@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertCircle, Check, Upload, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { StarRating, ChoiceField, LinearScale } from "@/components/form";
+import { MultiSelect, type Option } from "@/components/ui/multi-select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -13,12 +14,12 @@ import remarkGfm from "remark-gfm";
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear" | "paragraph" | "html" | "markdown" | "hidden";  // ✨ Added hidden
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear" | "paragraph" | "html" | "markdown" | "hidden" | "multiselect";  // ✨ Added hidden & multiselect
     label: string;
     description?: string;
     required?: boolean;
     placeholder?: string;
-    options?: string[];
+    options?: string[] | Option[];
     choices?: string[]; // Alternative to options (for compatibility)
     multiple?: boolean; // For choices (multiple selection) and file (multiple file upload)
     multiline?: boolean;
@@ -230,6 +231,34 @@ export default function FormPage() {
 
                 if (q.type === "choices" && q.multiple) {
                     initialData[q.id] = urlValue ? urlValue.split(',') : [];
+                } else if (q.type === "multiselect") {
+                    initialData[q.id] = urlValue ? urlValue.split(',') : [];
+                } else if (q.type === "dropdown" || (q.type === "choices" && !q.multiple)) {
+                    // Logic for Single Select (Dropdown / Radio)
+                    if (urlValue) {
+                        const options = (q.choices || q.options || []).map((o: any) => typeof o === 'string' ? o : o.label);
+                        const exactMatch = options.find((opt: string) => opt === urlValue);
+
+                        if (exactMatch) {
+                            initialData[q.id] = urlValue;
+                        } else {
+                            // Try to find "Other" option
+                            const otherVariants = ["อื่นๆ", "อื่น ๆ", "อื่นๆ (โปรดระบุ)", "อื่น ๆ (โปรดระบุ)", "other", "Other", "Others", "อื่น"];
+                            const otherOption = options.find((opt: string) =>
+                                otherVariants.some(other => opt.toLowerCase().includes(other.toLowerCase()))
+                            );
+
+                            if (otherOption) {
+                                // Prefill as Other: {Value}
+                                initialData[q.id] = `${otherOption}: ${urlValue}`;
+                            } else {
+                                // No match, no Other option -> Empty
+                                initialData[q.id] = "";
+                            }
+                        }
+                    } else {
+                        initialData[q.id] = "";
+                    }
                 } else if (q.type === "rating") {
                     initialData[q.id] = urlValue ? parseInt(urlValue, 10) : 0;
                 } else if (q.type === "file") {
@@ -675,7 +704,7 @@ export default function FormPage() {
             case "choices":
                 return (
                     <ChoiceField
-                        options={question.choices || question.options || []}
+                        options={(question.choices || question.options || []).map((o: any) => typeof o === 'string' ? o : o.label)}
                         value={value as string | string[]}
                         onChange={(v) => handleChange(question.id, v)}
                         multiple={question.multiple}
@@ -686,7 +715,7 @@ export default function FormPage() {
                 );
 
             case "dropdown":
-                const dropdownOptions = question.choices || question.options || [];
+                const dropdownOptions = (question.choices || question.options || []).map((o: any) => typeof o === 'string' ? o : o.label);
                 const otherVariants = ["อื่นๆ", "อื่น ๆ", "อื่นๆ (โปรดระบุ)", "อื่น ๆ (โปรดระบุ)", "other", "Other", "Others", "อื่น"];
                 const otherOption = dropdownOptions.find(opt =>
                     otherVariants.some(other => opt.toLowerCase().includes(other.toLowerCase()))
@@ -1050,6 +1079,29 @@ export default function FormPage() {
                         maxLabel={question.maxLabel}
                         disabled={formState === "submitting"}
                     />
+                );
+
+            case "multiselect":
+                const msOptions: Option[] = (question.options || question.choices || []).map((opt: any) => {
+                    if (typeof opt === 'string') return { label: opt, value: opt };
+                    return opt;
+                });
+
+                return (
+                    <div className="space-y-2">
+                        <MultiSelect
+                            options={msOptions}
+                            selected={Array.isArray(value) ? (value as string[]) : []}
+                            onChange={(v) => handleChange(question.id, v)}
+                            placeholder={question.placeholder || "เลือกตัวเลือก..."}
+                            className={cn(
+                                "pir-form-input font-bai",
+                                error && "ring-1 ring-destructive",
+                                question.readOnly && "bg-muted text-muted-foreground cursor-not-allowed"
+                            )}
+                            disabled={question.readOnly}
+                        />
+                    </div>
                 );
 
             default:

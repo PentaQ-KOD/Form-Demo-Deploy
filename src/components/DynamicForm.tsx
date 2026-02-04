@@ -9,20 +9,21 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertCircle } from "lucide-react";
+import { MultiSelect, Option } from "@/components/ui/multi-select";
 
 // Field configuration from API
 interface FormField {
     id: string;
     label: string;
-    type: "text" | "dropdown" | "email" | "number" | "textarea";
+    type: "text" | "dropdown" | "multiselect" | "email" | "number" | "textarea";
     placeholder?: string;
-    options?: string[];
+    options?: string[] | Option[]; // Support both simple strings and objects
     required?: boolean;
 }
 
 interface DynamicFormProps {
     apiUrl?: string;
-    onSubmit?: (data: Record<string, string>) => void;
+    onSubmit?: (data: Record<string, string | string[]>) => void;
     className?: string;
 }
 
@@ -35,7 +36,7 @@ export const DynamicForm = ({
 }: DynamicFormProps) => {
     const [formState, setFormState] = useState<FormState>("loading");
     const [fields, setFields] = useState<FormField[]>([]);
-    const [formData, setFormData] = useState<Record<string, string>>({});
+    const [formData, setFormData] = useState<Record<string, string | string[]>>({});
     const [errorMessage, setErrorMessage] = useState<string>("");
 
     const fetchFormConfig = async () => {
@@ -49,20 +50,37 @@ export const DynamicForm = ({
                 throw new Error(`Failed to load form configuration (${response.status})`);
             }
 
-            const data: FormField[] = await response.json();
+            const rawData = await response.json();
+            let formFields: FormField[] = [];
 
-            if (!Array.isArray(data) || data.length === 0) {
+            // Parse response structure to find questions array
+            if (Array.isArray(rawData)) {
+                if (rawData.length > 0 && rawData[0] && "questions" in rawData[0] && Array.isArray(rawData[0].questions)) {
+                    // Structure: [{ questions: [...] }]
+                    formFields = rawData[0].questions;
+                } else if (rawData.length > 0 && "id" in rawData[0]) {
+                    // Structure: [field1, field2] (Legacy/Direct array)
+                    formFields = rawData as FormField[];
+                }
+            } else if (typeof rawData === "object" && rawData !== null) {
+                if ("questions" in rawData && Array.isArray(rawData.questions)) {
+                    // Structure: { questions: [...] }
+                    formFields = rawData.questions;
+                }
+            }
+
+            if (formFields.length === 0) {
                 setFormState("empty");
                 return;
             }
 
             // Initialize form data with empty values
-            const initialData: Record<string, string> = {};
-            data.forEach((field) => {
-                initialData[field.id] = "";
+            const initialData: Record<string, string | string[]> = {};
+            formFields.forEach((field) => {
+                initialData[field.id] = field.type === "multiselect" ? [] : "";
             });
 
-            setFields(data);
+            setFields(formFields);
             setFormData(initialData);
             setFormState("success");
         } catch (err) {
@@ -76,7 +94,7 @@ export const DynamicForm = ({
         fetchFormConfig();
     }, [apiUrl]);
 
-    const handleInputChange = (fieldId: string, value: string) => {
+    const handleInputChange = (fieldId: string, value: string | string[]) => {
         setFormData((prev) => ({
             ...prev,
             [fieldId]: value,
@@ -88,6 +106,17 @@ export const DynamicForm = ({
         if (onSubmit) {
             onSubmit(formData);
         }
+    };
+
+    // Helper to normalize options to Option[]
+    const getOptions = (field: FormField): Option[] => {
+        if (!field.options) return [];
+        return field.options.map((opt) => {
+            if (typeof opt === "string") {
+                return { label: opt, value: opt };
+            }
+            return opt;
+        });
     };
 
     // Loading state with skeleton animation
@@ -173,9 +202,17 @@ export const DynamicForm = ({
                         {field.required && <span className="text-destructive ml-1">*</span>}
                     </label>
 
-                    {field.type === "dropdown" && field.options ? (
+                    {field.type === "multiselect" ? (
+                        <MultiSelect
+                            options={getOptions(field)}
+                            selected={Array.isArray(formData[field.id]) ? (formData[field.id] as string[]) : []}
+                            onChange={(value) => handleInputChange(field.id, value)}
+                            placeholder={field.placeholder || "Select options..."}
+                            className="font-bai text-lg md:text-2xl"
+                        />
+                    ) : field.type === "dropdown" && field.options ? (
                         <Select
-                            value={formData[field.id]}
+                            value={formData[field.id] as string}
                             onValueChange={(value) => handleInputChange(field.id, value)}
                         >
                             <SelectTrigger
@@ -185,13 +222,13 @@ export const DynamicForm = ({
                                 <SelectValue placeholder={field.placeholder || "Select an option..."} />
                             </SelectTrigger>
                             <SelectContent>
-                                {field.options.map((option) => (
+                                {getOptions(field).map((option) => (
                                     <SelectItem
-                                        key={option}
-                                        value={option}
+                                        key={option.value}
+                                        value={option.value}
                                         className="font-bai text-base md:text-lg"
                                     >
-                                        {option}
+                                        {option.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -199,7 +236,7 @@ export const DynamicForm = ({
                     ) : field.type === "textarea" ? (
                         <textarea
                             id={field.id}
-                            value={formData[field.id]}
+                            value={formData[field.id] as string}
                             onChange={(e) => handleInputChange(field.id, e.target.value)}
                             placeholder={field.placeholder}
                             required={field.required}
@@ -210,7 +247,7 @@ export const DynamicForm = ({
                         <Input
                             id={field.id}
                             type={field.type === "email" ? "email" : field.type === "number" ? "number" : "text"}
-                            value={formData[field.id]}
+                            value={formData[field.id] as string}
                             onChange={(e) => handleInputChange(field.id, e.target.value)}
                             placeholder={field.placeholder}
                             required={field.required}
@@ -231,3 +268,4 @@ export const DynamicForm = ({
         </form>
     );
 };
+
