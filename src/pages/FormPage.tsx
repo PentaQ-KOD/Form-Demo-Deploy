@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertCircle, Check, Upload, X, ChevronLeft, ChevronRight } from "lucide-react";
@@ -13,7 +13,7 @@ import remarkGfm from "remark-gfm";
 // Question types from Google Sheets schema
 interface Question {
     id: string;
-    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear" | "paragraph" | "html" | "markdown";  // ✨ Added html and markdown
+    type: "choices" | "text" | "phone" | "email" | "rating" | "file" | "date" | "dropdown" | "image" | "consent" | "slider" | "linear" | "paragraph" | "html" | "markdown" | "hidden";  // ✨ Added hidden
     label: string;
     description?: string;
     required?: boolean;
@@ -28,6 +28,7 @@ interface Question {
     accept?: string;  // For file upload
     maxSize?: number;
     fullWidth?: boolean; // If true, question spans full width in 2-column layout
+    readOnly?: boolean; // ✨ Add readOnly support
     // Slider properties
     min?: number;
     max?: number;
@@ -102,6 +103,7 @@ const extractConsentText = (questions: Question[]): string => {
 export default function FormPage() {
     const { formId } = useParams<{ formId: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const [formState, setFormState] = useState<FormState>("loading");
     const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
@@ -220,26 +222,29 @@ export default function FormPage() {
                 formMode: normalizedFormMode
             });
 
-            // Initialize form data
+            // Initialize form data with prefill from URL
             const initialData: Record<string, string | string[] | number | File | File[] | null | boolean> = {};
             data.questions.forEach((q: Question) => {
+                // Check if there's a value in the URL for this question ID
+                const urlValue = searchParams.get(q.id);
+
                 if (q.type === "choices" && q.multiple) {
-                    initialData[q.id] = [];
+                    initialData[q.id] = urlValue ? urlValue.split(',') : [];
                 } else if (q.type === "rating") {
-                    initialData[q.id] = 0;
+                    initialData[q.id] = urlValue ? parseInt(urlValue, 10) : 0;
                 } else if (q.type === "file") {
-                    // Support multiple file uploads
+                    // Files cannot be prefilled from URL for security/practical reasons
                     initialData[q.id] = q.multiple ? [] : null;
                 } else if (q.type === "consent") {
-                    initialData[q.id] = false;
+                    initialData[q.id] = urlValue === "true";
                 } else if (q.type === "slider") {
-                    initialData[q.id] = null;
+                    initialData[q.id] = urlValue ? parseInt(urlValue, 10) : null;
                 } else if (q.type === "linear") {
-                    initialData[q.id] = null;
+                    initialData[q.id] = urlValue ? parseInt(urlValue, 10) : null;
                 } else if (q.type === "paragraph") {
-                    initialData[q.id] = "";
+                    initialData[q.id] = urlValue || "";
                 } else {
-                    initialData[q.id] = "";
+                    initialData[q.id] = urlValue || "";
                 }
             });
             setFormData(initialData);
@@ -676,6 +681,7 @@ export default function FormPage() {
                         multiple={question.multiple}
                         variant={(question as any).variant || "default"}
                         label={question.label}  // ✨ Pass label for Markdown rendering
+                        disabled={question.readOnly}
                     />
                 );
 
@@ -707,8 +713,10 @@ export default function FormPage() {
                             }}
                             className={cn(
                                 "pir-form-input w-full font-bai",
-                                error && "ring-1 ring-destructive"
+                                error && "ring-1 ring-destructive",
+                                question.readOnly && "bg-muted text-muted-foreground cursor-not-allowed"
                             )}
+                            disabled={question.readOnly}
                         >
                             <option value="">{question.placeholder || "กรุณาเลือก..."}</option>
                             {dropdownOptions.map((opt) => (
@@ -733,6 +741,7 @@ export default function FormPage() {
                                 }}
                                 placeholder="โปรดระบุ..."
                                 className="pir-form-input w-full font-bai"
+                                disabled={question.readOnly}
                             />
                         )}
                     </div>
@@ -745,6 +754,7 @@ export default function FormPage() {
                         onChange={(v) => handleChange(question.id, v)}
                         maxRating={question.maxRating || 5}
                         size="lg"
+                        disabled={question.readOnly}
                     />
                 );
 
@@ -760,6 +770,7 @@ export default function FormPage() {
                                 error && "ring-1 ring-destructive"
                             )}
                             rows={3}
+                            disabled={question.readOnly}
                         />
                     );
                 }
@@ -771,8 +782,10 @@ export default function FormPage() {
                         placeholder={question.placeholder}
                         className={cn(
                             "pir-form-input font-bai",
-                            error && "ring-1 ring-destructive"
+                            error && "ring-1 ring-destructive",
+                            question.readOnly && "bg-muted text-muted-foreground cursor-not-allowed"
                         )}
+                        readOnly={question.readOnly}
                     />
                 );
 
@@ -799,8 +812,10 @@ export default function FormPage() {
                         placeholder={question.placeholder || "example@email.com"}
                         className={cn(
                             "pir-form-input font-bai",
-                            error && "ring-1 ring-destructive"
+                            error && "ring-1 ring-destructive",
+                            question.readOnly && "bg-muted text-muted-foreground cursor-not-allowed"
                         )}
+                        readOnly={question.readOnly}
                     />
                 );
 
@@ -813,8 +828,10 @@ export default function FormPage() {
                         placeholder={question.placeholder || "08x-xxx-xxxx"}
                         className={cn(
                             "pir-form-input font-bai",
-                            error && "ring-1 ring-destructive"
+                            error && "ring-1 ring-destructive",
+                            question.readOnly && "bg-muted text-muted-foreground cursor-not-allowed"
                         )}
+                        readOnly={question.readOnly}
                     />
                 );
 
@@ -1415,38 +1432,41 @@ export default function FormPage() {
                                             </div>
 
                                             {/* Questions in Section */}
-                                            {currentQuestions.map((question) => (
-                                                <div
-                                                    key={question.id}
-                                                    id={`question-${question.id}`}
-                                                    className="space-y-2.5"
-                                                >
-                                                    {/* Label without required marker (moved to section header) */}
-                                                    {question.label && (question.type !== 'consent' || (question.choices && question.choices.length > 0)) && (
-                                                        <label className="pir-form-label font-bai block whitespace-pre-line">
-                                                            <span className="text-base md:text-lg">{question.label}</span>
-                                                        </label>
-                                                    )}
+                                            {currentQuestions.map((question) => {
+                                                if (question.type === 'hidden') return null;
+                                                return (
+                                                    <div
+                                                        key={question.id}
+                                                        id={`question-${question.id}`}
+                                                        className="space-y-2.5"
+                                                    >
+                                                        {/* Label without required marker (moved to section header) */}
+                                                        {question.label && (question.type !== 'consent' || (question.choices && question.choices.length > 0)) && (
+                                                            <label className="pir-form-label font-bai block whitespace-pre-line">
+                                                                <span className="text-base md:text-lg">{question.label}</span>
+                                                            </label>
+                                                        )}
 
-                                                    {/* Description */}
-                                                    {question.description && (
-                                                        <p className="pir-form-description font-bai">
-                                                            {question.description}
-                                                        </p>
-                                                    )}
+                                                        {/* Description */}
+                                                        {question.description && (
+                                                            <p className="pir-form-description font-bai">
+                                                                {question.description}
+                                                            </p>
+                                                        )}
 
-                                                    {/* Input */}
-                                                    {renderQuestionInput(question)}
+                                                        {/* Input */}
+                                                        {renderQuestionInput(question)}
 
-                                                    {/* Validation Error */}
-                                                    {validationErrors[question.id] && (
-                                                        <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1.5">
-                                                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                                                            {validationErrors[question.id]}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            ))}
+                                                        {/* Validation Error */}
+                                                        {validationErrors[question.id] && (
+                                                            <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1.5">
+                                                                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                                                {validationErrors[question.id]}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
 
                                             {/* Navigation Buttons for Sections */}
                                             <div className="flex items-center justify-between pt-6 border-t border-border mt-8">
@@ -1497,6 +1517,15 @@ export default function FormPage() {
                                 // --- CASE B: QUESTION WIZARD (Single Mode + NO Sections) ---
                                 // Standard Step-by-Step Question
                                 const question = formConfig.questions[currentQuestionIndex];
+                                if (question.type === 'hidden') {
+                                    // Skip hidden questions in wizard mode (auto-advance logic might be needed, 
+                                    // but simplistically, wizard mode usually implies visible steps. 
+                                    // Robust handling: auto-skip or filter out hidden questions from the 'questions' array used for navigation)
+                                    // For now, if we encounter a hidden Q in wizard, rendering null might break layout or show blank.
+                                    // Better approach: filter hidden questions out of the index navigation or just render nothing.
+                                    return <div key={question.id} className="hidden"></div>;
+                                }
+
                                 return (
                                     <>
                                         <div
@@ -1580,54 +1609,57 @@ export default function FormPage() {
                         <form onSubmit={onFormSubmit} className="p-6 md:p-8">
                             {/* All Questions - Single Column Layout */}
                             <div className="space-y-6">
-                                {formConfig.questions.map((question, index) => (
-                                    <div
-                                        key={question.id}
-                                        id={`question-${question.id}`}
-                                        className="space-y-2.5"
-                                    >
-                                        {/* Section Header */}
-                                        {/* Show section header if defined and different from previous */}
-                                        {(index === 0 || question.section !== formConfig.questions[index - 1].section) && question.section && (
-                                            <div className="pt-4 pb-2">
-                                                <h3 className="text-xl md:text-2xl font-bold font-bai text-primary">
-                                                    {question.section}
-                                                </h3>
-                                                <div className="h-1 w-20 bg-primary/20 rounded-full mt-2" />
-                                            </div>
-                                        )}
+                                {formConfig.questions.map((question, index) => {
+                                    if (question.type === 'hidden') return null;
+                                    return (
+                                        <div
+                                            key={question.id}
+                                            id={`question-${question.id}`}
+                                            className="space-y-2.5"
+                                        >
+                                            {/* Section Header */}
+                                            {/* Show section header if defined and different from previous */}
+                                            {(index === 0 || question.section !== formConfig.questions[index - 1].section) && question.section && (
+                                                <div className="pt-4 pb-2">
+                                                    <h3 className="text-xl md:text-2xl font-bold font-bai text-primary">
+                                                        {question.section}
+                                                    </h3>
+                                                    <div className="h-1 w-20 bg-primary/20 rounded-full mt-2" />
+                                                </div>
+                                            )}
 
-                                        {/* Label with inline required marker - only show if label exists */}
-                                        {/* Label with inline required marker - only show if label exists */}
-                                        {/* For particular types like consent: if no choices provided, the label is used inside the component, so don't show it here to avoid duplication */}
-                                        {question.label && (question.type !== 'consent' || (question.choices && question.choices.length > 0)) && (
-                                            <label className="pir-form-label font-bai block whitespace-pre-line">
-                                                <span className="text-base md:text-lg">{question.label}</span>
-                                                {question.required && (
-                                                    <span className="text-sm text-destructive font-normal ml-2">(จำเป็น)</span>
-                                                )}
-                                            </label>
-                                        )}
+                                            {/* Label with inline required marker - only show if label exists */}
+                                            {/* Label with inline required marker - only show if label exists */}
+                                            {/* For particular types like consent: if no choices provided, the label is used inside the component, so don't show it here to avoid duplication */}
+                                            {question.label && (question.type !== 'consent' || (question.choices && question.choices.length > 0)) && (
+                                                <label className="pir-form-label font-bai block whitespace-pre-line">
+                                                    <span className="text-base md:text-lg">{question.label}</span>
+                                                    {question.required && (
+                                                        <span className="text-sm text-destructive font-normal ml-2">(จำเป็น)</span>
+                                                    )}
+                                                </label>
+                                            )}
 
-                                        {/* Description */}
-                                        {question.description && (
-                                            <p className="pir-form-description font-bai">
-                                                {question.description}
-                                            </p>
-                                        )}
+                                            {/* Description */}
+                                            {question.description && (
+                                                <p className="pir-form-description font-bai">
+                                                    {question.description}
+                                                </p>
+                                            )}
 
-                                        {/* Input */}
-                                        {renderQuestionInput(question)}
+                                            {/* Input */}
+                                            {renderQuestionInput(question)}
 
-                                        {/* Validation Error */}
-                                        {validationErrors[question.id] && (
-                                            <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1.5">
-                                                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                                                {validationErrors[question.id]}
-                                            </p>
-                                        )}
-                                    </div>
-                                ))}
+                                            {/* Validation Error */}
+                                            {validationErrors[question.id] && (
+                                                <p className="text-sm text-destructive font-bai mt-2 flex items-center gap-1.5">
+                                                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                                                    {validationErrors[question.id]}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             {/* Submit Button */}

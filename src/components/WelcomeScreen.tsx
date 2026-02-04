@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useSearchParams } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import quizBG from "@/assets/quizBG.jpg";
 import quizDarkBG from "@/assets/quizDarkBG.jpg";
@@ -20,17 +21,37 @@ export const WelcomeScreen = ({
   testName = "AI Champion Readiness Test",
   customerLogoUrl = customerLogo
 }: WelcomeScreenProps) => {
+  const [searchParams] = useSearchParams();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [isDark, setIsDark] = useState(false);
   const [consent, setConsent] = useState(false);
 
+  // Helper for email validation
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   useEffect(() => {
-    // Load saved data
+    // 1. Priority: URL Search Params
+    const urlName = searchParams.get('name');
+    const urlEmail = searchParams.get('email');
+
+    // 2. Fallback: localStorage
     const savedName = localStorage.getItem('userName');
     const savedEmail = localStorage.getItem('userEmail');
-    if (savedName) setFullName(savedName);
-    if (savedEmail) setEmail(savedEmail);
+
+    if (urlName) {
+      setFullName(urlName);
+    } else if (savedName) {
+      setFullName(savedName);
+    }
+
+    if (urlEmail) {
+      setEmail(urlEmail);
+    } else if (savedEmail) {
+      setEmail(savedEmail);
+    }
 
     const isDarkMode = document.documentElement.classList.contains('dark');
     setIsDark(isDarkMode);
@@ -142,7 +163,7 @@ export const WelcomeScreen = ({
                 <Button
                   type="submit"
                   className="w-full text-base md:text-xl h-12 md:h-14 rounded-full"
-                  disabled={!fullName.trim() || !email.trim() || !consent}
+                  disabled={!fullName.trim() || !email.trim() || !isValidEmail(email) || !consent}
                 >
                   เริ่มทำแบบทดสอบ
                 </Button>
