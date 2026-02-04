@@ -11,6 +11,27 @@
         "description": {
             "type": "string"
         },
+        "successPage": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "Custom success page title (supports markdown)"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Custom success page message (supports markdown)"
+                },
+                "showIcon": {
+                    "type": "boolean",
+                    "description": "Whether to show the checkmark icon (default: true)"
+                },
+                "iconColor": {
+                    "type": "string",
+                    "description": "Icon color (default: green)"
+                }
+            }
+        },
         "questions": {
             "type": "array",
             "items": {
